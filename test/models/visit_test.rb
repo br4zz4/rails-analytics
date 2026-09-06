@@ -5,7 +5,7 @@ require "test_helper"
 class RailsAnalytics::VisitTest < ActiveSupport::TestCase
   setup do
     RailsAnalytics::Visit.delete_all
-    RailsAnalytics::Event.delete_all if defined?(RailsAnalytics::Event)
+    RailsAnalytics::Event.delete_all
   end
 
   test "creates a visit with valid attributes" do
