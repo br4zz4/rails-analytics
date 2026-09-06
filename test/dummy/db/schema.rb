@@ -10,13 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_203100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_203200) do
   create_table "rails_analytics_daily_salts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date", null: false
     t.string "salt", null: false
     t.datetime "updated_at", null: false
     t.index ["date"], name: "index_rails_analytics_daily_salts_on_date", unique: true
+  end
+
+  create_table "rails_analytics_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.json "properties", default: {}
+    t.datetime "time", null: false
+    t.datetime "updated_at", null: false
+    t.integer "visit_id", null: false
+    t.index ["name", "time"], name: "index_rails_analytics_events_on_name_and_time"
+    t.index ["name"], name: "index_rails_analytics_events_on_name"
+    t.index ["time"], name: "index_rails_analytics_events_on_time"
+    t.index ["visit_id"], name: "index_rails_analytics_events_on_visit_id"
   end
 
   create_table "rails_analytics_page_views", force: :cascade do |t|
@@ -57,4 +70,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_203100) do
     t.index ["anonymity_key", "started_at"], name: "idx_visits_anonymity_started"
     t.index ["started_at"], name: "index_rails_analytics_visits_on_started_at"
   end
+
+  add_foreign_key "rails_analytics_events", "rails_analytics_visits", column: "visit_id"
 end
