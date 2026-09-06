@@ -1,6 +1,6 @@
 ---
 title: Rails Analytics — Piloto (coleta de tráfego + dashboard)
-spec: null
+spec: specs/rails_analytics_piloto.md
 created: 2026-09-06
 updated: 2026-09-06
 certainty: high
