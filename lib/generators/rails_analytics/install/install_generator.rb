@@ -4,29 +4,46 @@ module RailsAnalytics
   module Generators
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
-      desc "Instala o rails_analytics: copia migração, monta o engine e injeta o tracker no layout."
+      desc "Instala o rails_analytics: copia migrations, monta engine, cria initializer e pina tracker no importmap."
 
-      def copy_migration
-        copy_file "create_rails_analytics_page_views.rb",
-                  "db/migrate/#{Time.now.utc.strftime('%Y%m%d%H%M%S')}_create_rails_analytics_page_views.rb"
+      def copy_migrations
+        migrations_dir = RailsAnalytics::Engine.root.join("db/migrate")
+        Dir["#{migrations_dir}/*.rb"].sort.each do |migration|
+          filename = File.basename(migration)
+          copy_file migration, "db/migrate/#{filename}"
+        end
+        say_status :ok, "Migrations copiadas para db/migrate/"
+      end
+
+      def create_initializer
+        template "initializer.rb", "config/initializers/rails_analytics.rb"
+        say_status :ok, "Initializer criado em config/initializers/rails_analytics.rb"
       end
 
       def mount_engine
-        route 'mount RailsAnalytics::Engine => "/rails_analytics"'
+        route %(mount RailsAnalytics::Engine => RailsAnalytics.config.mount_path)
+        say_status :ok, "Engine montada em config/routes.rb"
       end
 
-      def inject_tracker
-        return unless (layout = Dir["app/views/layouts/*.html.erb"].first)
-
-        if File.read(layout).include?("rails_analytics_tracker_tag")
-          say_status :skipped, "tracker já injetado em #{layout}", :yellow
-          return
+      def pin_tracker
+        importmap_path = "config/importmap.rb"
+        if File.exist?(importmap_path)
+          unless File.read(importmap_path).include?("rails_analytics/tracker")
+            append_to_file importmap_path, %(\npin "rails_analytics/tracker", to: RailsAnalytics.config.mount_path + "/tracker.js"\n)
+            say_status :ok, "Tracker pinado em config/importmap.rb"
+          end
+        else
+          say_status :skipped, "config/importmap.rb não encontrado — adicione manualmente:", :yellow
+          say %(  Adicione ao seu layout: <script src="<%= RailsAnalytics.config.mount_path %>/tracker.js" defer></script>), :yellow
         end
+      end
 
-        inject_into_file layout, before: "</head>" do
-          "\n    <%= rails_analytics_tracker_tag %>\n"
-        end
-        say_status :injected, "tracker adicionado ao <head> de #{layout}", :green
+      def instructions
+        say "\n✅ rails_analytics instalado! Próximos passos:", :green
+        say "  1. bin/rails db:migrate"
+        say "  2. Configure a autenticação no initializer: config/initializers/rails_analytics.rb"
+        say "  3. Acesse o dashboard em #{RailsAnalytics.config.mount_path}"
+        say ""
       end
     end
   end
