@@ -1,0 +1,8 @@
+/.bundle/
+/pkg/
+/tmp/
+/log/
+/test/dummy/log/
+/test/dummy/tmp/
+/test/dummy/storage/
+/test/dummy/db/*.sqlite3*
