@@ -5,8 +5,8 @@ require_relative "lib/rails_analytics/version"
 Gem::Specification.new do |s|
   s.name        = "rails_analytics"
   s.version     = RailsAnalytics::VERSION
-  s.summary     = "Analytics estilo Umami para Rails — coleta de tráfego e dashboard."
-  s.description = "Engine Rails que coleta tráfego via pixel e tracker JS (sem cookies), salva no banco da host app e exibe um dashboard moderno e simples."
+  s.summary     = "Privacy-first analytics engine for Rails — cookie-less, LGPD-compliant."
+  s.description = "Rails Engine with server-side tracker, aggregated dashboard, IP masking, daily anonymity key rotation, UTM tracking, and 6-month retention. No third-party analytics dependencies."
   s.authors     = ["br4zz4"]
   s.email       = ["dev@br4zz4.com"]
   s.homepage    = "https://github.com/br4zz4/rails-analytics"

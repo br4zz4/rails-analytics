@@ -1,50 +1,53 @@
 # Rails Analytics
 
-Analytics estilo [Umami](https://umami.is) para aplicações Rails — coleta de tráfego
-**sem cookies** (privacy-first), salva no banco da sua própria aplicação e exibe um
-dashboard moderno, simples e server-rendered (zero JS de terceiros).
+A privacy-first analytics engine for Rails. Cookie-less, LGPD-compliant, and free of
+third-party analytics dependencies — it collects traffic **server-side**, stores it in
+your own database, and renders an aggregated dashboard with zero client-side JS
+dependencies.
 
-## Como funciona
+## How it works
 
 ```
-┌─────────────┐   tracker.js (injectado no layout)
-│  Navegador  │──────────────────────────────►  GET /rails_analytics/px.gif?sid=...&path=...&...
+┌─────────────┐   tracker.js (injetado no layout)
+│  Navegador  │──────────────────────────────►  POST /rails_analytics/collect
 └─────────────┘                                    │
                                                    ▼
                                         ┌──────────────────────┐
-                                        │ AnalyticsController  │  grava PageView
-                                        │  rails_analytics_    │  (IP hasheado)
+                                        │ AnalyticsController  │  assinado com token,
+                                        │  (rails_analytics)   │  IP mascarado antes
+                                        └──────────┬───────────┘  de persistir
+                                                   ▼
+                                        ┌──────────────────────┐
+                                        │   rails_analytics_   │  visits + events
+                                        │   visits / events    │  (6-month retention)
                                         └──────────┬───────────┘
                                                    ▼
                                         ┌──────────────────────┐
-                                        │   rails_analytics_   │  tabela no seu banco
-                                        │   page_views         │
-                                        └──────────┬───────────┘
-                                                   ▼
-                                        ┌──────────────────────┐
-                                        │  Dashboard em        │  GET /rails_analytics
-                                        │  /rails_analytics    │  KPIs + gráfico + tabelas
+                                        │  Dashboard em        │  overview / events /
+                                        │  /rails_analytics    │  visits
                                         └──────────────────────┘
 ```
 
-1. O **tracker JS** (injetado pelo generator no `<head>` do layout) coleta no navegador:
-   `path`, `referrer`, `title`, resolução de tela, idioma e um `session_id` aleatório
-   guardado em `localStorage` (sem cookies).
-2. No `load` da página, o tracker dispara um request para o **pixel 1×1 transparente**
-   (`px.gif`) com os dados na query string — mesmo padrão do Umami, sem CORS (same-origin).
-3. O engine grava uma linha em `rails_analytics_page_views`, **hasheando o IP**
-   (nunca guarda o IP cru) e truncando campos longos.
-4. O **dashboard** em `/rails_analytics` mostra as métricas agregadas em SQL puro.
+1. The **tracker JS** (injected by the generator into your layout `<head>`) collects
+   path, referrer domain, viewport, language, and a per-page nonce — no cookies, no
+   localStorage.
+2. On `load`, the tracker POSTs a **signed token** to the engine's collect endpoint
+   using `navigator.sendBeacon` (same-origin, no CORS).
+3. The engine verifies the token, **masks the IP** (before anything hits disk),
+   derives a **daily anonymity key**, and stores a `Visit` row. Custom events are
+   stored as `Event` rows linked to the visit.
+4. The **dashboard** in `/rails_analytics` shows aggregated metrics from pure SQL
+   queries in three views: overview, events, and visits.
 
-## Requisitos
+## Requirements
 
 - Ruby >= 3.0
-- Rails >= 7.0 (testado em 8.1)
-- Banco: SQLite, PostgreSQL ou MySQL (qualquer banco suportado pelo Active Record)
+- Rails >= 7.0 (tested on 8.1)
+- Database: SQLite, PostgreSQL or MySQL (anything Active Record supports)
 
-## Instalação
+## Installation
 
-### 1. Adicione a gem
+### 1. Add the gem
 
 ```ruby
 # Gemfile
@@ -55,44 +58,31 @@ gem "rails_analytics"
 bundle install
 ```
 
-### 2. Rode o generator de instalação
+### 2. Run the install generator
 
 ```bash
 bin/rails generate rails_analytics:install
 ```
 
-O generator faz 3 coisas:
+The generator does three things:
 
-| Ação | Arquivo | Detalhe |
-|------|---------|---------|
-| Copia a migração | `db/migrate/xxx_create_rails_analytics_page_views.rb` | cria a tabela `rails_analytics_page_views` |
-| Monta o engine | `config/routes.rb` | adiciona `mount RailsAnalytics::Engine => "/rails_analytics"` |
-| Injeta o tracker | `app/views/layouts/*.html.erb` | adiciona `<%= rails_analytics_tracker_tag %>` no `<head>` do primeiro layout |
+| Action | File | Detail |
+|--------|------|--------|
+| Copies the migration | `db/migrate/xxx_create_rails_analytics_page_views.rb` | creates the `rails_analytics_visits`, `rails_analytics_events` and `rails_analytics_daily_salts` tables |
+| Mounts the engine | `config/routes.rb` | adds `mount RailsAnalytics::Engine => "/rails_analytics"` |
+| Injects the tracker | `app/views/layouts/*.html.erb` | adds `<%= rails_analytics_tracker_tag %>` to the `<head>` of the first layout |
 
-### 3. Migre o banco
+### 3. Migrate the database
 
 ```bash
 bin/rails db:migrate
 ```
 
-Pronto! A coleta é automática e o dashboard fica em **`/rails_analytics`**.
+Done — collection is automatic and the dashboard lives at **`/rails_analytics`**.
 
-## Uso
+## Mounting
 
-### Dashboard
-
-Acesse `http://localhost:3000/rails_analytics`:
-
-- **KPIs**: visitas hoje, visitas 7 dias, visitantes únicos 30d, páginas/visita
-- **Gráfico**: visitas por dia (últimos 30 dias) — SVG do lado do servidor, sem JS
-- **Tabelas**: páginas mais visitadas e principais referências (top 10)
-- **Dispositivos**: breakdown desktop vs. móvel (via resolução de tela)
-
-Tema claro/escuro automático (via `prefers-color-scheme`).
-
-### Endpoint do tracker personalizado
-
-Se você quiser montar o engine em outro caminho:
+You can mount the engine at any path:
 
 ```ruby
 # config/routes.rb
@@ -104,62 +94,140 @@ mount RailsAnalytics::Engine => "/analytics"
 <%= rails_analytics_tracker_tag endpoint: "/analytics" %>
 ```
 
-> ⚠️ O `endpoint:` do helper deve bater com o caminho onde o engine foi montado.
+> The `endpoint:` passed to the helper must match the path the engine is mounted at.
+> You can also set a global default via `RailsAnalytics.configure { |c| c.mount_path = "/analytics" }`.
 
-### Desativar a coleta em ambientes específicos
+## Authentication
 
-```erb
-<% unless Rails.env.local? %>
-  <%= rails_analytics_tracker_tag %>
-<% end %>
+The dashboard is protected by an auth callback. By default it calls `authenticate_admin!`
+on the host app's `ApplicationController` (the engine controller **inherits from the
+host** `ApplicationController`, so Devise and friends keep working out of the box).
+
+```ruby
+# config/initializers/rails_analytics.rb
+RailsAnalytics.configure do |config|
+  # Symbol: sent to the host ApplicationController
+  config.auth_callback = :authenticate_admin!
+
+  # or a callable:
+  config.auth_callback = -> { current_user&.admin? }
+end
 ```
 
-## Privacidade
+## Compliance
 
-- **Sem cookies** — identificador de sessão apenas em `localStorage` (expira com o navegador).
-- **IP hasheado** com `secret_key_base` (SHA-256) — impossível reverter sem a chave da app.
-- Não rastreia cliques, campos de formulário nem conteúdo digitado.
-- Sem dependência de CDN — tudo roda dentro da sua aplicação.
+### What is collected
 
-## Tabela criada
+- Path (landing page)
+- Referrer domain
+- Device type (desktop / mobile / tablet)
+- Viewport size
+- Browser language
+- Timestamp (UTC)
+- Per-page nonce (one-time signed token)
+- UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`)
 
-| Coluna | Tipo | Descrição |
-|--------|------|-----------|
-| `path` | string, NOT NULL | caminho visitado (ex: `/blog/hello?x=1`) |
-| `referrer` | string | origem do visitante (cabeçalho `Referer`) |
-| `title` | string | título da página |
-| `screen_width` / `screen_height` | integer | resolução de tela |
-| `language` | string | idioma do navegador |
-| `user_agent` | string | User-Agent (truncado em 255) |
-| `ip_hash` | string | SHA-256 do IP com salt |
-| `session_id` | string | identificador aleatório de sessão |
-| `viewed_at` | datetime, NOT NULL | momento da visita |
+### What is NEVER collected
 
-Índices em `viewed_at`, `path` e `session_id`.
+- Cookies
+- localStorage
+- Browser fingerprinting
+- Raw IP address
+- Full `User-Agent` string
+- Any PII (names, emails, form input, clicks)
 
-## Testes
+### Why cookie-less
+
+Brazil's ANPD cookie guide classifies analytics cookies as **"non-essential"**, which
+require prior opt-in consent (LGPD). Rails Analytics sidesteps this entirely: it uses no
+cookies, no localStorage, and no fingerprinting — so there is nothing to consent to and
+no cookie banner needed for analytics.
+
+### IP masking
+
+IPs are masked **before any storage**:
+
+- IPv4: last octet zeroed (`203.0.113.45` → `203.0.113.0`)
+- IPv6: last 80 bits zeroed (`2001:db8::/48`)
+- IPv4-mapped IPv6 is normalized back to the masked IPv4 form
+
+### Anonymity key
+
+Unique-visitor counting uses an **anonymity key** derived from:
+
+```
+SHA256(masked_ip + coarse_ua_bucket + daily_salt)
+```
+
+- The "coarse UA bucket" is just `"<browser>:<os>"` (e.g. `Chrome:macOS`) — never the
+  full user-agent string.
+- A **salt rotates daily**, so a key cannot be correlated across days. A visitor
+  returning tomorrow gets a brand-new identity.
+
+### Retention
+
+Data is kept for **6 months** per the Brazilian Civil Rights Framework for the Internet
+(Marco Civil, art. 15). A `RetentionJob` purges records older than that; schedule it in
+your app, e.g.:
+
+```ruby
+# config/schedule.rb (or cron)
+# Daily purge of records older than 6 months
+```
+
+## Tracker API
+
+The tracker exposes a small global for custom events:
+
+```js
+window.RailsAnalytics.track(name, props)
+```
+
+Examples:
+
+```js
+// Donation click (button click)
+document.querySelector("#donate-btn").addEventListener("click", () => {
+  window.RailsAnalytics.track("donation-click", { value: 50 });
+});
+
+// Scroll depth (once the reader passes 75%)
+window.addEventListener("scroll", () => {
+  if (window.scrollY / document.body.scrollHeight > 0.75 && !tracked) {
+    tracked = true;
+    window.RailsAnalytics.track("scroll-depth", { threshold: 75 });
+  }
+});
+```
+
+Events appear in the **events** dashboard view, where they can be filtered by name and
+inspected with their properties.
+
+## Add a new metric
+
+Metrics are plain SQL in the `Stats` module — add one method and one line in the view:
+
+```ruby
+# lib/rails_analytics/stats.rb
+def avg_visits_per_day(since: default_since)
+  total_visits(since: since) / 30.0
+end
+```
+
+```erb
+<!-- app/views/rails_analytics/dashboards/overview.html.erb -->
+<%= render "metric", label: "Avg visits/day", value: number_with_precision(@stats.avg_visits_per_day, precision: 1) %>
+```
+
+## Tests
 
 ```bash
-# na raiz da gem
+# gem root
 bundle install
 cd test/dummy && bin/rails db:migrate RAILS_ENV=test && cd ../..
 bin/rails test
 ```
 
-## App demo (ver funcionando)
+## License
 
-Veja [rails-analytics-demo](https://github.com/br4zz4/rails-analytics-demo) — um app
-Rails pronto com a gem configurada, dados de exemplo e instruções passo a passo para
-rodar e navegar vendo as visitas aparecerem no dashboard.
-
-## Roadmap (fora do piloto)
-
-- Campanhas/UTM, eventos e conversões
-- Exclusão de tráfego próprio e bot
-- Multi-sitio e autenticação do dashboard
-- Retenção de dados e exportação (CSV/JSON)
-- Geo/localização
-
-## Licença
-
-MIT — veja [MIT-LICENSE](MIT-LICENSE).
+MIT — see [MIT-LICENSE](MIT-LICENSE).
