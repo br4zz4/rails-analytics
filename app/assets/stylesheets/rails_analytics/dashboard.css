@@ -1,0 +1,113 @@
+/* Rails Analytics dashboard — CSS puro, sem dependências */
+:root {
+  --ra-bg: #f6f7f9;
+  --ra-card: #ffffff;
+  --ra-border: #e4e7ec;
+  --ra-text: #1a1d21;
+  --ra-muted: #667085;
+  --ra-accent: #4f46e5;
+  --ra-accent-soft: #eef2ff;
+  --ra-radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--ra-bg);
+  color: var(--ra-text);
+  line-height: 1.5;
+}
+
+.ra-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--ra-card);
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.ra-brand { font-size: 18px; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
+
+.ra-nav a {
+  color: var(--ra-accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.ra-main { max-width: 1080px; margin: 0 auto; padding: 32px 24px 64px; }
+
+.ra-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ra-card {
+  background: var(--ra-card);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius);
+  padding: 20px;
+}
+
+.ra-card-title { font-size: 14px; font-weight: 600; color: var(--ra-muted); margin: 0 0 16px; }
+
+.ra-kpi-label { display: block; font-size: 13px; color: var(--ra-muted); margin-bottom: 6px; }
+
+.ra-kpi-value { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; }
+
+.ra-chart-card { margin-bottom: 24px; }
+
+.ra-chart svg { width: 100%; height: auto; }
+.ra-chart rect { fill: var(--ra-accent); opacity: 0.85; }
+.ra-chart rect:hover { opacity: 1; }
+
+.ra-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ra-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ra-table th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ra-muted);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ra-border);
+}
+.ra-table td { padding: 8px 10px; border-bottom: 1px solid var(--ra-border); }
+.ra-table tr:last-child td { border-bottom: none; }
+
+.ra-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ra-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+
+.ra-empty { color: var(--ra-muted); font-size: 14px; }
+
+.ra-devices { display: flex; gap: 32px; }
+
+.ra-footer {
+  text-align: center;
+  color: var(--ra-muted);
+  font-size: 12px;
+  padding: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ra-bg: #0f1115;
+    --ra-card: #171a21;
+    --ra-border: #262b36;
+    --ra-text: #e6e8eb;
+    --ra-muted: #98a2b3;
+    --ra-accent: #818cf8;
+    --ra-accent-soft: #1e2140;
+  }
+}

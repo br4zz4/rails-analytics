@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rails Analytics</title>
+    <link rel="stylesheet" href="<%= request.base_url %>/rails_analytics/dashboard.css" media="all">
+  </head>
+  <body>
+    <header class="ra-header">
+      <h1 class="ra-brand">Rails Analytics</h1>
+      <nav class="ra-nav">
+        <a href="<%= request.base_url %>/rails_analytics/">Tráfego</a>
+      </nav>
+    </header>
+    <main class="ra-main">
+      <%= yield %>
+    </main>
+    <footer class="ra-footer">
+      <span>rails_analytics v<%= RailsAnalytics::VERSION %> — sem cookies, sem rastreio de IP</span>
+    </footer>
+  </body>
+</html>
