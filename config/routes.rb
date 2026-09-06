@@ -6,5 +6,7 @@ RailsAnalytics::Engine.routes.draw do
   get "dashboard.css" => "analytics#dashboard_css"
   post "collect" => "analytics#collect"
   get  "token" => "analytics#token"
-  root to: "dashboards#index"
+  root to: "dashboards#overview"
+  get "events" => "dashboards#events"
+  get "visits" => "dashboards#visits"
 end
