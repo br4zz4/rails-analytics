@@ -10,7 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_202926) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_203000) do
+  create_table "rails_analytics_daily_salts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.string "salt", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_rails_analytics_daily_salts_on_date", unique: true
+  end
+
   create_table "rails_analytics_page_views", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_hash"
