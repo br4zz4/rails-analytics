@@ -27,6 +27,133 @@ certainty: high
 
 ---
 
+### Task 0: Infra de testes — Rakefile, test_helper, dummy app
+
+**Files:**
+- Modify: `Rakefile` — excluir `test/dummy/**` do test task principal, criar task `integration`
+- Rewrite: `test/test_helper.rb` — boot no dummy app (RAILS_ENV=test)
+- Modify: `test/dummy/Gemfile` — adicionar `gem "rack-attack"`
+- Modify: `test/dummy/config/routes.rb` — montar engine em `/rails_analytics`
+- Modify: `test/dummy/app/controllers/application_controller.rb` — definir `authenticate_admin!` (redirect)
+- Create: `test/dummy/config/initializers/rails_analytics.rb` — config da gem
+- Create: `test/dummy/config/initializers/rack_attack.rb` — ativar rack-attack
+- Modify: `.gitignore` — adicionar `.worktrees/`, `tmp/`
+
+**Por quê:** o pre-flight mostrou que `bin/rails test` na raiz falha com NameError (test_helper não bota o Rails) e o Rakefile não distingue testes do gem vs dummy. Os testes unitários ficam na raiz (`test/lib/*_test.rb`, `test/models/*_test.rb`), então o test_helper da raiz precisa bootar o dummy app.
+
+- [ ] **Step 1: Rewrite Rakefile**
+
+```ruby
+# Rakefile
+# frozen_string_literal: true
+
+require "bundler/gem_tasks"
+require "rake/testtask"
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << "test"
+  t.pattern = "test/**/*_test.rb"
+  t.exclude_pattern = "test/dummy/**/*_test.rb"
+  t.warning = false
+end
+
+Rake::TestTask.new(:integration) do |t|
+  t.libs << "test/dummy/test"
+  t.pattern = "test/dummy/test/**/*_test.rb"
+  t.warning = false
+end
+
+task default: [:test, :integration]
+```
+
+- [ ] **Step 2: Rewrite test_helper**
+
+```ruby
+# test/test_helper.rb
+# frozen_string_literal: true
+
+ENV["RAILS_ENV"] ||= "test"
+require_relative "dummy/config/environment"
+require "rails/test_help"
+require "rails_analytics"
+```
+
+- [ ] **Step 3: Update dummy Gemfile (add rack-attack)**
+
+```ruby
+# test/dummy/Gemfile — adicionar:
+gem "rack-attack"
+```
+
+- [ ] **Step 4: Mount engine + auth no dummy**
+
+```ruby
+# test/dummy/config/routes.rb
+Rails.application.routes.draw do
+  mount RailsAnalytics::Engine => "/rails_analytics"
+  root to: "application#index"
+end
+```
+
+```ruby
+# test/dummy/app/controllers/application_controller.rb
+class ApplicationController < ActionController::Base
+  def index
+    render plain: "dummy"
+  end
+
+  private
+
+  def authenticate_admin!
+    redirect_to main_app.root_path, alert: "Não autorizado."
+  end
+end
+```
+
+```ruby
+# test/dummy/config/initializers/rails_analytics.rb
+RailsAnalytics.configure do |config|
+  config.mount_path = "/rails_analytics"
+end
+```
+
+```ruby
+# test/dummy/config/initializers/rack_attack.rb
+require "rack/attack"
+Rack::Attack.enabled = true
+```
+
+- [ ] **Step 5: Add .worktrees/ + tmp/ to .gitignore**
+
+```gitignore
+/.bundle/
+/pkg/
+/tmp/
+/.worktrees/
+/test/dummy/log/
+/test/dummy/tmp/
+/test/dummy/storage/
+/test/dummy/db/*.sqlite3*
+```
+
+- [ ] **Step 6: Verify**
+
+```bash
+cd test/dummy && bin/rails db:migrate RAILS_ENV=test && cd ../..
+cd test/dummy && bin/rails test
+```
+
+Expected: PILOTO ainda verde (6 tests passam) — nada quebrou.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add Rakefile test/test_helper.rb test/dummy/Gemfile test/dummy/config/routes.rb test/dummy/app/controllers/application_controller.rb test/dummy/config/initializers/ .gitignore
+git commit -m "test: infra de testes com boot do dummy"
+```
+
+---
+
 ### Task 1: IpMask — mascaramento de IPs
 
 **Files:**
@@ -36,6 +163,8 @@ certainty: high
 **Interfaces:**
 - Produces: `RailsAnalytics::IpMask.mask(ip_string) => String`
 
+Nota: usa `IPAddr#mask` (portável, sem regex manual). IPv4 → /24 (último octeto zero). IPv6 → /48 (últimos 80 bits zero). IPv4-mapped (::ffff:x.x.x.x) → mascara o IPv4 embutido.
+
 - [ ] **Step 1: Write the failing test**
 
 ```ruby
@@ -43,32 +172,37 @@ certainty: high
 # frozen_string_literal: true
 
 require "test_helper"
-require "rails_analytics/ip_mask"
 
-class RailsAnalytics::IpMaskTest < Minitest::Test
+class RailsAnalytics::IpMaskTest < ActiveSupport::TestCase
   def test_ipv4_zeros_last_octet
-    assert_equal "192.168.1.0",   RailsAnalytics::IpMask.mask("192.168.1.55")
-    assert_equal "8.8.8.0",       RailsAnalytics::IpMask.mask("8.8.8.8")
-    assert_equal "10.0.0.0",      RailsAnalytics::IpMask.mask("10.0.0.1")
+    assert_equal "192.168.1.0", RailsAnalytics::IpMask.mask("192.168.1.55")
+    assert_equal "8.8.8.0",     RailsAnalytics::IpMask.mask("8.8.8.8")
+    assert_equal "10.0.0.0",    RailsAnalytics::IpMask.mask("10.0.0.1")
   end
 
   def test_ipv6_zeros_last_80_bits
-    assert_equal "2001:0db8:0000::", RailsAnalytics::IpMask.mask("2001:0db8:0000:0000:0000:ff00:0042:8329")
-    assert_equal "::1:0000:0000:0000::", RailsAnalytics::IpMask.mask("::1")
+    assert_equal "2001:db8::", RailsAnalytics::IpMask.mask("2001:db8::ff00:42:8329")
+    assert_equal "::",         RailsAnalytics::IpMask.mask("::1")
   end
 
   def test_ipv6_mapped_ipv4
-    masked = RailsAnalytics::IpMask.mask("::ffff:192.168.1.55")
-    assert_equal "::ffff:192.168.1.0", masked
+    assert_equal "::ffff:192.168.1.0", RailsAnalytics::IpMask.mask("::ffff:192.168.1.55")
   end
 
-  def test_localhost_preserved
-    assert_equal "127.0.0.0",   RailsAnalytics::IpMask.mask("127.0.0.1")
-    assert_equal "::1:0000:0000:0000::", RailsAnalytics::IpMask.mask("::1")
+  def test_localhost_ipv4_masked
+    assert_equal "127.0.0.0", RailsAnalytics::IpMask.mask("127.0.0.1")
   end
 
   def test_nil_returns_nil
     assert_nil RailsAnalytics::IpMask.mask(nil)
+  end
+
+  def test_blank_returns_nil
+    assert_nil RailsAnalytics::IpMask.mask("")
+  end
+
+  def test_invalid_ip_returns_nil
+    assert_nil RailsAnalytics::IpMask.mask("not-an-ip")
   end
 end
 ```
@@ -76,7 +210,7 @@ end
 - [ ] **Step 2: Run to verify it fails**
 
 ```bash
-cd test/dummy && bin/rails test
+cd test/dummy && bin/rails test test/lib/ip_mask_test.rb
 ```
 
 Expected: FAIL — `NameError: uninitialized constant RailsAnalytics::IpMask`
@@ -91,26 +225,21 @@ require "ipaddr"
 
 module RailsAnalytics
   module IpMask
-    IPV4_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
-
     def self.mask(ip)
-      return nil if ip.nil?
+      return nil if ip.blank?
 
-      if ip.match?(IPV4_REGEX)
-        ip.sub(/\.\d+$/, ".0")
-      else
-        addr = IPAddr.new(ip)
-        if addr.ipv6?
-          # Zero out last 80 bits (keep first 48)
-          octets = addr.hton.bytes
-          octets[6..15] = Array.new(10, 0)
-          IPAddr.new_ntoh(octets.pack("C*")).to_s
+      addr = IPAddr.new(ip.to_s)
+      if addr.ipv4?
+        addr.mask(24).to_s
+      elsif addr.ipv6?
+        if addr.ipv4_mapped?
+          IPAddr.new("::ffff:#{addr.native.mask(24)}").to_s
         else
-          ip
+          addr.mask(48).to_s
         end
       end
     rescue IPAddr::InvalidAddressError
-      ip.to_s.gsub(/[^0-9a-fA-F:.]/, "")
+      nil
     end
   end
 end
@@ -122,7 +251,7 @@ end
 cd test/dummy && bin/rails test test/lib/ip_mask_test.rb
 ```
 
-Expected: PASS — 5 assertions
+Expected: PASS — 7 assertions
 
 - [ ] **Step 5: Commit**
 
@@ -879,7 +1008,9 @@ git commit -m "feat: Event model com scopes e GIN index"
 
 **Interfaces:**
 - Consumes: `RailsAnalytics::Visit`, `RailsAnalytics::Event`
-- Produces: `RailsAnalytics::Stats` — 12 métodos de agregação (spec: visits_by_day, unique_visitors_by_day, total_visits, total_unique_visitors, total_events, top_sources, top_events, event_counts_by_name, events_by_name, bounce_rate, utm_breakdown, devices). Todos recebem `since:` (default `RailsAnalytics.config.since_default.ago`).
+- Produces: `RailsAnalytics::Stats` — 12 métodos de agregação (spec: visits_by_day, unique_visitors_by_day, total_visits, total_unique_visitors, total_events, top_sources, top_events, event_counts_by_name, events_by_name, bounce_rate, utm_breakdown, devices) + `visits_paginated` + `events_paginated`. Todos recebem `since:` (default `RailsAnalytics.config.since_default.ago`).
+
+Nota: NENHUMA função PostgreSQL-only (o dummy roda SQLite). `visits_paginated` monta top_source em query separada e agrega no Ruby (volumes pequenos, dias únicos).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1105,43 +1236,54 @@ module RailsAnalytics
     end
 
     def visits_paginated(page: 1, per_page: 20, since: default_since)
-      scope = base_scope(since)
-      total = scope.count
-      rows = scope.group("date(started_at)")
-                  .order("date(started_at) desc")
-                  .select(
-                    "date(started_at) as date",
-                    "count(*) as visits",
-                    "count(distinct anonymity_key) as unique_visitors",
-                    "mode() within group (order by referrer_domain) as top_source"
-                  )
-                  .offset((page - 1) * per_page)
-                  .limit(per_page)
-      {
-        data: rows.map { |r| { date: r.date, visits: r.visits, unique_visitors: r.unique_visitors, top_source: r.top_source } },
-        total: total,
-        page: page,
-        per_page: per_page
-      }
+      base = base_scope(since)
+      total = base.count
+
+      day_rows = base.group("date(started_at)")
+                     .order("date(started_at) desc")
+                     .select(
+                       "date(started_at) as day",
+                       "count(*) as visits",
+                       "count(distinct anonymity_key) as unique_visitors"
+                     )
+                     .offset((page - 1) * per_page)
+                     .limit(per_page)
+
+      top_sources = base.where.not(referrer_domain: nil)
+                        .group("date(started_at)", :referrer_domain)
+                        .count
+
+      data = day_rows.map do |row|
+        day = row.day.to_date
+        sources = top_sources.select { |(d, _ref), _count| d.to_date == day }
+                             .max_by { |(_d, _ref), count| count }
+        {
+          date: day,
+          visits: row.visits,
+          unique_visitors: row.unique_visitors,
+          top_source: sources&.first&.last
+        }
+      end
+
+      { data: data, total: total, page: page, per_page: per_page }
     end
 
     def events_paginated(name: nil, page: 1, per_page: 20, since: default_since)
       scope = Event.since(since)
       scope = scope.named(name) if name.present?
-      total = scope.distinct.count(:name)
 
+      total = scope.group("date(time)", :name).count.size
       rows = scope.group("date(time)", :name)
                   .order("date(time) desc")
-                  .select("date(time) as date, name, count(*) as count")
+                  .select("date(time) as day, name, count(*) as count")
                   .offset((page - 1) * per_page)
                   .limit(per_page)
 
-      {
-        data: rows.map { |r| { date: r.date, name: r.name, count: r.count } },
-        total: total,
-        page: page,
-        per_page: per_page
-      }
+      data = rows.map do |r|
+        { date: r.day.to_date, name: r.name, count: r.count }
+      end
+
+      { data: data, total: total, page: page, per_page: per_page }
     end
 
     def base_scope(since)
@@ -1180,42 +1322,35 @@ git commit -m "feat: Stats com 14 métodos agregados"
 
 **Interfaces:**
 - Consumes: `RailsAnalytics.config.auth_callback`
-- Produces: `RailsAnalytics::ApplicationController` — `before_action :authenticate_admin!` (condicional). Método `skip_auth!` para controllers de coleta.
+- Produces: `RailsAnalytics::ApplicationController` — herda do `ApplicationController` do host (padrão RailsAdmin), `before_action :authorize_admin!`. AnalyticsController (coleta) chama `skip_before_action :authorize_admin!`.
 
-- [ ] **Step 1: Write the implementation (controller) + test**
+Nota crítica: o engine controller HERDA do host para que `:authenticate_admin!` (Devise do host) fique acessível via `send`. O `before_action` se chama `authorize_admin!` (nome diferente do callback) para evitar loop infinito quando `auth_callback = :authenticate_admin!`.
+
+- [ ] **Step 1: Write the implementation (controller)**
 
 ```ruby
 # app/controllers/rails_analytics/application_controller.rb
 # frozen_string_literal: true
 
 module RailsAnalytics
-  class ApplicationController < ActionController::Base
+  # Herda do ApplicationController do host (padrão RailsAdmin) para que o
+  # callback de auth (ex: Devise authenticate_admin!) fique acessível.
+  class ApplicationController < (defined?(::ApplicationController) ? ::ApplicationController : ActionController::Base)
     layout "rails_analytics"
 
-    before_action :authenticate_admin!, unless: :skip_auth?
+    before_action :authorize_admin!
 
     private
 
-    def authenticate_admin!
+    def authorize_admin!
       callback = RailsAnalytics.config.auth_callback
 
       if callback.respond_to?(:call)
-        instance_exec(&callback) || redirect_unauthorized
+        redirect_to main_app.root_path unless instance_exec(&callback)
       else
-        send(callback) || redirect_unauthorized
+        # Symbol: delega ao host (Devise decide redirect/raise)
+        send(callback)
       end
-    end
-
-    def redirect_unauthorized
-      redirect_to main_app.root_path, alert: "Acesso não autorizado." and return
-    end
-
-    def skip_auth?
-      @skip_auth || false
-    end
-
-    def skip_auth!
-      @skip_auth = true
     end
   end
 end
@@ -1228,9 +1363,20 @@ end
 require "test_helper"
 
 class RailsAnalytics::ApplicationControllerTest < ActionDispatch::IntegrationTest
-  test "redirects when no auth callback configured" do
+  test "redirects when host auth rejects" do
+    RailsAnalytics.config.auth_callback = -> { false }
     get "/rails_analytics/"
-    assert_response :redirect, "deve redirecionar sem auth"
+    assert_response :redirect
+  ensure
+    RailsAnalytics.config.auth_callback = :authenticate_admin!
+  end
+
+  test "allows when host auth accepts" do
+    RailsAnalytics.config.auth_callback = -> { true }
+    get "/rails_analytics/"
+    assert_response :success
+  ensure
+    RailsAnalytics.config.auth_callback = :authenticate_admin!
   end
 end
 ```
@@ -1241,7 +1387,7 @@ end
 cd test/dummy && bin/rails test test/controllers/application_controller_test.rb
 ```
 
-Expected: PASS (redirect) or FAIL if dummy app already has auth. Ajustar dummy app se necessário.
+Expected: PASS — ambos os testes (redirect quando rejeita, 200 quando aceita)
 
 - [ ] **Step 3: Commit**
 
@@ -1406,14 +1552,14 @@ Expected: FAIL — route doesn't exist yet
 
 module RailsAnalytics
   class AnalyticsController < ApplicationController
-    skip_before_action :authenticate_admin!
+    skip_before_action :authorize_admin!
 
     TOKEN_PURPOSE = :tracker
     VERIFIER_NAME = "rails_analytics_tracker"
 
     def collect
       json = JSON.parse(request.body.read) rescue {}
-      token = request.headers["Authorization"]&.gsub(/^Bearer /, "")
+      token = extract_token(request, json)
 
       unless valid_token?(token)
         render json: { error: "Unauthorized" }, status: :unauthorized and return
@@ -1474,6 +1620,13 @@ module RailsAnalytics
     end
 
     private
+
+    # sendBeacon não permite headers custom — aceita token no header OU no body.
+    def extract_token(request, json)
+      header = request.headers["Authorization"]
+      return header.gsub(/^Bearer /, "") if header.present?
+      json["token"]
+    end
 
     def valid_token?(token)
       return false if token.blank?
@@ -2157,19 +2310,23 @@ git commit -m "feat: Views do dashboard (overview, events, visits)"
 (function () {
   "use strict";
 
-  var ENDPOINT = "/analytics";
   var FLUSH_INTERVAL = 10000; // 10s
   var MAX_BATCH = 20;
 
+  // Lê o endpoint do script tag (helper injeta data-endpoint)
+  var script = document.currentScript || document.querySelector("script[data-rails-analytics]");
+  var ENDPOINT = (script && script.getAttribute("data-endpoint")) || "/rails_analytics";
+
   var queue = [];
   var token = null;
-  var nonce = randomHex(16);
 
   function randomHex(len) {
     var arr = new Uint8Array(len);
     crypto.getRandomValues(arr);
     return Array.from(arr, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
   }
+
+  var nonce = randomHex(16);
 
   function deviceType() {
     var w = screen.width || window.innerWidth || 0;
@@ -2189,6 +2346,18 @@ git commit -m "feat: Views do dashboard (overview, events, visits)"
     }
   }
 
+  function payload() {
+    return {
+      path: location.pathname + location.search,
+      referrer_domain: referrerDomain(),
+      device_type: deviceType(),
+      viewport: screen.width + "x" + screen.height,
+      language: (navigator.language || "").slice(0, 10),
+      nonce: nonce,
+      events: queue
+    };
+  }
+
   function fetchToken() {
     return fetch(ENDPOINT + "/token", { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
@@ -2200,25 +2369,25 @@ git commit -m "feat: Views do dashboard (overview, events, visits)"
     if (queue.length === 0 || !token) return;
 
     var batch = queue.splice(0, MAX_BATCH);
-    var payload = {
-      path: location.pathname + location.search,
-      referrer_domain: referrerDomain(),
-      device_type: deviceType(),
-      viewport: screen.width + "x" + screen.height,
-      language: (navigator.language || "").slice(0, 10),
-      nonce: nonce,
-      events: batch
-    };
+    var body = payload();
+    body.events = batch;
 
-    fetch(ENDPOINT + "/collect", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify(payload),
-      keepalive: true
-    }).catch(function () {});
+    // sendBeacon não permite header custom — token vai no body.
+    // fetch keepalive permite headers e sobrevive ao unload em browsers modernos.
+    if (navigator.sendBeacon) {
+      body.token = token;
+      navigator.sendBeacon(ENDPOINT + "/collect", new Blob([JSON.stringify(body)], { type: "application/json" }));
+    } else {
+      fetch(ENDPOINT + "/collect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(body),
+        keepalive: true
+      }).catch(function () {});
+    }
 
     nonce = randomHex(16); // rotate nonce after each batch
   }
@@ -2242,20 +2411,18 @@ git commit -m "feat: Views do dashboard (overview, events, visits)"
   // Send on page exit (survives tab close)
   function onPageHide() {
     if (queue.length > 0 && token) {
-      var payload = {
-        path: location.pathname + location.search,
-        referrer_domain: referrerDomain(),
-        device_type: deviceType(),
-        viewport: screen.width + "x" + screen.height,
-        language: (navigator.language || "").slice(0, 10),
-        nonce: nonce,
-        events: queue
-      };
-
-      navigator.sendBeacon(
-        ENDPOINT + "/collect",
-        JSON.stringify(payload)
-      );
+      var body = payload();
+      body.token = token;
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(ENDPOINT + "/collect", new Blob([JSON.stringify(body)], { type: "application/json" }));
+      } else {
+        fetch(ENDPOINT + "/collect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+          body: JSON.stringify(body),
+          keepalive: true
+        }).catch(function () {});
+      }
       queue = [];
     }
   }
@@ -2293,14 +2460,16 @@ git commit -m "feat: Tracker JS cookie-less com sendBeacon"
 
 ---
 
-### Task 14: Engine + routes final
+### Task 14: Engine + routes final + helper
 
 **Files:**
 - Rewrite: `lib/rails_analytics/engine.rb`
 - Update: `lib/rails_analytics.rb`
+- Rewrite: `app/helpers/rails_analytics/application_helper.rb`
 
 **Interfaces:**
-- Engine with Propshaft asset config, helper injection, rate limiting initializer
+- Engine with Propshaft asset config, helper injection, rack-attack load
+- Helper: `rails_analytics_tracker_tag` injeta `<script src="{mount}/tracker.js" data-rails-analytics data-endpoint="{mount}" defer>`
 
 ```ruby
 # lib/rails_analytics/engine.rb
@@ -2328,11 +2497,10 @@ module RailsAnalytics
       end
     end
 
-    initializer "rails_analytics.rack_attack" do |app|
-      next unless defined?(Rack::Attack)
-
-      if app.config.respond_to?(:middleware) && !app.config.middleware.include?(Rack::Attack)
-        app.config.middleware.use Rack::Attack
+    initializer "rails_analytics.rack_attack" do
+      if defined?(Rack::Attack)
+        require "rails_analytics/rack_attack"
+        RailsAnalytics::RackAttack.configure
       end
     end
   end
@@ -2351,11 +2519,35 @@ require_relative "rails_analytics/stats"
 require_relative "rails_analytics/engine" if defined?(Rails::Railtie)
 ```
 
-- [ ] **Step 1: Commit**
+```ruby
+# app/helpers/rails_analytics/application_helper.rb
+# frozen_string_literal: true
+
+module RailsAnalytics
+  module ApplicationHelper
+    def rails_analytics_tracker_tag(options = {})
+      endpoint = options[:endpoint] || RailsAnalytics.config.mount_path
+      tag.script(src: "#{endpoint}/tracker.js",
+                 data: { rails_analytics: true, endpoint: endpoint },
+                 defer: true)
+    end
+  end
+end
+```
+
+- [ ] **Step 1: Verify**
 
 ```bash
-git add lib/rails_analytics/engine.rb lib/rails_analytics.rb
-git commit -m "feat: Engine final com asset e helper config"
+cd test/dummy && bin/rails test test/controllers/analytics_controller_test.rb
+```
+
+Expected: PASS
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add lib/rails_analytics/engine.rb lib/rails_analytics.rb app/helpers/rails_analytics/application_helper.rb
+git commit -m "feat: Engine final com helper e rack_attack"
 ```
 
 ---
@@ -2571,17 +2763,22 @@ git commit -m "feat: RetentionJob purga dados > 6 meses"
 
 ---
 
-### Task 17: Integration + security + rage limiting
+### Task 17: Integration + security + rate limiting + cleanup do piloto
 
 **Files:**
 - Rewrite: `test/dummy/test/integration/rails_analytics_test.rb`
-- Create: dummy app config for rack-attack (or use existing)
 - Create: `lib/rails_analytics/rack_attack.rb` (throttle rules)
+- Delete: `app/models/rails_analytics/page_view.rb` (piloto)
+- Delete: `app/models/rails_analytics/dashboard_stats.rb` (piloto — movido para Stats)
+- Delete: `app/models/rails_analytics/tracker_script.rb` (piloto — movido para tracker.js)
+- Delete: `app/views/rails_analytics/dashboards/index.html.erb` (piloto — substituído por overview)
+- Delete: `db/migrate/20260906000000_create_rails_analytics_page_views.rb` (piloto)
+- Modify: `test/dummy/db/schema.rb` — remover tabela page_views órfã (opcional)
 
 **Interfaces:**
-- Full integration test covering: tracker, collect, dashboard, auth, security, rate limit
+- Full integration test covering: tracker, collect (com token no header E no body), dashboard com auth, security, rate limit
 
-- [ ] **Step 1: Write rate limiting rules (optional, loaded if rack-attack present)**
+- [ ] **Step 1: Write rate limiting rules (loaded if rack-attack present)**
 
 ```ruby
 # lib/rails_analytics/rack_attack.rb
@@ -2594,11 +2791,13 @@ module RailsAnalytics
 
       masked_ip = ->(req) {
         ip = req.env["HTTP_CF_CONNECTING_IP"] || req.ip
-        RailsAnalytics::IpMask.mask(ip)
+        RailsAnalytics::IpMask.mask(ip) || "unknown"
       }
 
+      # Throttle o endpoint de coleta: 20 req/min por masked IP.
+      # O path termina em /collect independentemente do mount_path.
       ::Rack::Attack.throttle("rails_analytics_collect_by_ip", limit: 20, period: 60.seconds) do |req|
-        if req.path =~ %r{/analytics/collect} && req.post?
+        if req.post? && req.path.end_with?("/collect")
           masked_ip.call(req)
         end
       end
@@ -2607,7 +2806,7 @@ module RailsAnalytics
 end
 ```
 
-- [ ] **Step 2: Rewrite integration test**
+- [ ] **Step 2: Rewrite integration test (com auth setup + token no body)**
 
 ```ruby
 # test/dummy/test/integration/rails_analytics_test.rb
@@ -2635,6 +2834,16 @@ class RailsAnalytics::CollectTest < ActionDispatch::IntegrationTest
     assert_match(/\.0$/, visit.masked_ip) # masked
     assert_equal "twitter.com", visit.referrer_domain
     assert_equal 1, visit.events.count
+  end
+
+  test "collect accepts token in body (sendBeacon compatibility)" do
+    assert_difference -> { RailsAnalytics::Visit.count }, 1 do
+      post "/rails_analytics/collect",
+           params: { path: "/home", token: @token, events: [] }.to_json,
+           headers: { "Content-Type" => "application/json" }
+    end
+
+    assert_response :no_content
   end
 
   test "collect without token returns 401" do
@@ -2699,6 +2908,13 @@ class RailsAnalytics::DashboardTest < ActionDispatch::IntegrationTest
                                        utm_source: "twitter", utm_campaign: "launch",
                                        started_at: Time.current)
     v.events.create!(name: "doacao-click", time: Time.current)
+
+    # Dashboard exige auth — permite via callable nos testes
+    RailsAnalytics.config.auth_callback = -> { true }
+  end
+
+  teardown do
+    RailsAnalytics.config.auth_callback = :authenticate_admin!
   end
 
   test "dashboard overview renders core elements" do
@@ -2732,10 +2948,66 @@ class RailsAnalytics::DashboardTest < ActionDispatch::IntegrationTest
     get "/rails_analytics/"
     assert_includes response.body, "retenção"
   end
+
+  test "dashboard without auth redirects" do
+    RailsAnalytics.config.auth_callback = -> { false }
+    get "/rails_analytics/"
+    assert_response :redirect
+  end
+end
+
+class RailsAnalytics::SecurityTest < ActionDispatch::IntegrationTest
+  setup do
+    RailsAnalytics::Visit.delete_all
+    RailsAnalytics.config.auth_callback = -> { true }
+  end
+
+  teardown do
+    RailsAnalytics.config.auth_callback = :authenticate_admin!
+  end
+
+  test "rate limit kicks in after 20 requests per masked IP" do
+    verifier = Rails.application.message_verifier("rails_analytics_tracker")
+    token = verifier.generate({ exp: 5.minutes.from_now.to_i }, purpose: :tracker)
+
+    20.times do
+      post "/rails_analytics/collect",
+           params: { path: "/x", token: token, events: [] }.to_json,
+           headers: { "Content-Type" => "application/json", "REMOTE_ADDR" => "203.0.113.5" }
+    end
+    assert_response :no_content
+
+    post "/rails_analytics/collect",
+         params: { path: "/x", token: token, events: [] }.to_json,
+         headers: { "Content-Type" => "application/json", "REMOTE_ADDR" => "203.0.113.5" }
+    assert_response :too_many_requests
+  end
+
+  test "different masked IPs are throttled independently" do
+    verifier = Rails.application.message_verifier("rails_analytics_tracker")
+    token = verifier.generate({ exp: 5.minutes.from_now.to_i }, purpose: :tracker)
+
+    21.times do
+      post "/rails_analytics/collect",
+           params: { path: "/x", token: token, events: [] }.to_json,
+           headers: { "Content-Type" => "application/json", "REMOTE_ADDR" => "198.51.100.7" }
+    end
+    assert_response :no_content, "25 requests de IPs diferentes não devem ser throttled juntos"
+  end
 end
 ```
 
-- [ ] **Step 2: Run all tests**
+- [ ] **Step 3: Cleanup do piloto**
+
+```bash
+git rm app/models/rails_analytics/page_view.rb
+git rm app/models/rails_analytics/dashboard_stats.rb
+git rm app/models/rails_analytics/tracker_script.rb
+git rm app/views/rails_analytics/dashboards/index.html.erb
+git rm db/migrate/20260906000000_create_rails_analytics_page_views.rb
+```
+
+- [ ] **Step 4: Run all tests**
 
 ```bash
 cd test/dummy && bin/rails db:migrate RAILS_ENV=test
@@ -2744,11 +3016,12 @@ cd test/dummy && bin/rails test
 
 Expected: All tests PASS
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add test/ lib/rails_analytics/rack_attack.rb
 git commit -m "test: integration, security e rate limit"
+git commit -m "refactor: remove arquivos do piloto"
 ```
 
 ---
@@ -2840,12 +3113,15 @@ git commit -m "chore: verificação completa e limpeza"
 
 ## Self-review
 
-- **Spec coverage**: ✅ Cada objetivo da spec mapeado para uma task (1→19).
+- **Spec coverage**: ✅ Cada objetivo da spec mapeado para uma task (0→19).
 - **Placeholder scan**: ✅ Zero TBD/TODO/vague steps.
 - **Type consistency**: ✅ Interfaces declaradas entre tasks; `Stats` expõe `bounce_rate` (Float), `visits_paginated` (Hash); controllers consomem `Stats` e `ChartBuilder`.
+- **Portabilidade**: ✅ Nenhuma função PG-only (SQLite compat); GIN index condicional; `mode()` removido.
+- **Auth**: ✅ Herança do host (padrão RailsAdmin) + `authorize_admin!` (sem loop).
 
 | Spec objective | Task(s) |
 |---|---|
+| 0. Infra de testes (Rakefile, test_helper, dummy) | 0 |
 | 1. Tracker JS cookie-less | 13, 9 |
 | 2. Identity key anônima | 4, 3 |
 | 3. IP masking | 1 |
@@ -2854,8 +3130,8 @@ git commit -m "chore: verificação completa e limpeza"
 | 6. Stats agregado | 7 |
 | 7. Dashboard RESTful | 10, 11, 12 |
 | 8. Auth configurável | 2, 8 |
-| 9. Rate limiting | 17 |
+| 9. Rate limiting | 14, 17 |
 | 10. Retention job | 16 |
 | 11. Install generator | 15 |
-| 12. Testes TDD | 1–17 (cada task) |
-| Docs | 14, 18 |
+| 12. Testes TDD | 0–17 (cada task) |
+| Docs | 18 |
