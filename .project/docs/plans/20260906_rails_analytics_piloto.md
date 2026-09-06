@@ -63,7 +63,7 @@ Gem::Specification.new do |s|
   s.summary     = "Analytics estilo Umami para Rails — coleta de tráfego e dashboard."
   s.description = "Engine Rails que coleta tráfego (pixel + tracker JS, sem cookies), salva no banco da host app e exibe dashboard simples."
   s.authors     = ["br4zz4"]
-  s.homepage    = "https://github.com/br4zz4/rails-analytcs"
+  s.homepage    = "https://github.com/br4zz4/rails-analytics"
   s.license     = "MIT"
   s.required_ruby_version = ">= 3.0"
   s.files       = Dir["lib/**/*", "app/**/*", "config/**/*", "db/**/*", "README.md", "MIT-LICENSE"]
