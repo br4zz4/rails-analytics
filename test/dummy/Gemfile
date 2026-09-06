@@ -8,6 +8,8 @@ gem "propshaft"
 gem "sqlite3", ">= 2.1"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
+# Rack middleware para proteção contra ataques
+gem "rack-attack"
 
 # Engine rails_analytics (gem local via path)
 gem "rails_analytics", path: "../.."

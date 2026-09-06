@@ -1,6 +1,7 @@
 /.bundle/
 /pkg/
 /tmp/
+/.worktrees/
 /log/
 /test/dummy/log/
 /test/dummy/tmp/

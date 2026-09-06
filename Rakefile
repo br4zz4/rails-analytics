@@ -5,8 +5,14 @@ require "rake/testtask"
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
-  t.pattern = "test/**/*_test.rb"
+  t.test_files = Rake::FileList["test/**/*_test.rb"].exclude("test/dummy/**/*_test.rb")
   t.warning = false
 end
 
-task default: :test
+Rake::TestTask.new(:integration) do |t|
+  t.libs << "test/dummy/test"
+  t.pattern = "test/dummy/test/**/*_test.rb"
+  t.warning = false
+end
+
+task default: [:test, :integration]

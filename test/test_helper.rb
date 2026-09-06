@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "minitest/autorun"
-
-$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+ENV["RAILS_ENV"] ||= "test"
+require_relative "dummy/config/environment"
+require "rails/test_help"
 require "rails_analytics"
