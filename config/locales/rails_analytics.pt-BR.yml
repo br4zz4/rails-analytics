@@ -1,0 +1,37 @@
+pt-BR:
+  rails_analytics:
+    title: "Rails Analytics"
+    nav:
+      overview: "Visão geral"
+      events: "Eventos"
+      visits: "Visitas"
+    footer: "Dados agregados e anônimos — retenção 6 meses"
+    kpi:
+      visits: "Visitas"
+      unique_visitors: "Visitantes únicos"
+      events: "Eventos"
+      bounce_rate: "Taxa de rejeição"
+    chart:
+      visits_per_day: "Visitas por dia"
+      no_data: "Sem dados"
+    tables:
+      top_sources: "Origem do tráfego"
+      top_events: "Clics por botão"
+      devices: "Dispositivos"
+      utm: "UTM"
+      date: "Data"
+      visits: "Visitas"
+      unique_visitors: "Visitantes únicos"
+      top_source: "Origem principal"
+      event_name: "Nome do evento"
+      count: "Contagem"
+      source: "Origem"
+      campaign: "Campanha"
+      medium: "Mídia"
+    empty: "Nenhum dado registrado ainda."
+    filter:
+      all_events: "Todos os eventos"
+      filter: "Filtrar"
+    pagination:
+      previous: "Anterior"
+      next: "Próximo"

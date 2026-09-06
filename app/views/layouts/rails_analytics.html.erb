@@ -1,23 +1,26 @@
+<%# app/views/layouts/rails_analytics.html.erb %>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="<%= I18n.locale %>">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rails Analytics</title>
+    <title><%= t("rails_analytics.title") %></title>
     <link rel="stylesheet" href="<%= request.base_url %>/rails_analytics/dashboard.css" media="all">
   </head>
   <body>
     <header class="ra-header">
-      <h1 class="ra-brand">Rails Analytics</h1>
+      <h1 class="ra-brand"><%= t("rails_analytics.title") %></h1>
       <nav class="ra-nav">
-        <a href="<%= request.base_url %>/rails_analytics/">Tráfego</a>
+        <%= link_to t("rails_analytics.nav.overview"), rails_analytics.root_path %>
+        <%= link_to t("rails_analytics.nav.events"), rails_analytics.events_path %>
+        <%= link_to t("rails_analytics.nav.visits"), rails_analytics.visits_path %>
       </nav>
     </header>
     <main class="ra-main">
       <%= yield %>
     </main>
     <footer class="ra-footer">
-      <span>rails_analytics v<%= RailsAnalytics::VERSION %> — sem cookies, sem rastreio de IP</span>
+      <span><%= t("rails_analytics.footer") %></span>
     </footer>
   </body>
 </html>

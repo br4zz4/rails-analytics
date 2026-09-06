@@ -1,0 +1,37 @@
+en:
+  rails_analytics:
+    title: "Rails Analytics"
+    nav:
+      overview: "Overview"
+      events: "Events"
+      visits: "Visits"
+    footer: "Aggregated and anonymous data — 6 month retention"
+    kpi:
+      visits: "Visits"
+      unique_visitors: "Unique visitors"
+      events: "Events"
+      bounce_rate: "Bounce rate"
+    chart:
+      visits_per_day: "Visits per day"
+      no_data: "No data"
+    tables:
+      top_sources: "Traffic sources"
+      top_events: "Top events"
+      devices: "Devices"
+      utm: "UTM"
+      date: "Date"
+      visits: "Visits"
+      unique_visitors: "Unique visitors"
+      top_source: "Top source"
+      event_name: "Event name"
+      count: "Count"
+      source: "Source"
+      campaign: "Campaign"
+      medium: "Medium"
+    empty: "No data recorded yet."
+    filter:
+      all_events: "All events"
+      filter: "Filter"
+    pagination:
+      previous: "Previous"
+      next: "Next"

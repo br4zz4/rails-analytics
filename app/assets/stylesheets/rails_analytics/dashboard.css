@@ -111,3 +111,46 @@ body {
     --ra-accent-soft: #1e2140;
   }
 }
+
+/* Pagination */
+.ra-pagination {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.ra-pagination a, .ra-pagination span {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--ra-border);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--ra-text);
+}
+.ra-pagination .current {
+  background: var(--ra-accent);
+  color: #fff;
+  border-color: var(--ra-accent);
+}
+
+/* Filter bar */
+.ra-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.ra-filter select, .ra-filter input {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--ra-border);
+  border-radius: 4px;
+  background: var(--ra-bg-card);
+  color: var(--ra-text);
+}
+
+/* UTM table */
+.ra-utm-table th {
+  font-size: 0.75rem;
+}
+.ra-utm-table td {
+  font-size: 0.85rem;
+}
