@@ -148,7 +148,7 @@ bin/rails test
 
 ## App demo (ver funcionando)
 
-Veja [rails-analytics-demo](https://github.com/br4zz4/rails-analytics-demo) — um app
+Veja [rails-analytics-demo](https://github.com/oporpino/rails-analytics-demo) — um app
 Rails pronto com a gem configurada, dados de exemplo e instruções passo a passo para
 rodar e navegar vendo as visitas aparecerem no dashboard.
 

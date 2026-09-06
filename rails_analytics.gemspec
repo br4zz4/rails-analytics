@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.description = "Engine Rails que coleta tráfego via pixel e tracker JS (sem cookies), salva no banco da host app e exibe um dashboard moderno e simples."
   s.authors     = ["br4zz4"]
   s.email       = ["dev@br4zz4.com"]
-  s.homepage    = "https://github.com/br4zz4/rails-analytcs"
+  s.homepage    = "https://github.com/oporpino/rails-analytcs"
   s.license     = "MIT"
   s.required_ruby_version = ">= 3.0"
 
