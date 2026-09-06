@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_203000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_203100) do
   create_table "rails_analytics_daily_salts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date", null: false
@@ -35,5 +35,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_203000) do
     t.index ["path"], name: "index_rails_analytics_page_views_on_path"
     t.index ["session_id"], name: "index_rails_analytics_page_views_on_session_id"
     t.index ["viewed_at"], name: "index_rails_analytics_page_views_on_viewed_at"
+  end
+
+  create_table "rails_analytics_visits", force: :cascade do |t|
+    t.string "anonymity_key", null: false
+    t.string "country"
+    t.datetime "created_at", null: false
+    t.string "device_type"
+    t.text "landing_page_path"
+    t.string "language"
+    t.string "masked_ip", null: false
+    t.string "referrer_domain"
+    t.datetime "started_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "utm_campaign"
+    t.string "utm_content"
+    t.string "utm_medium"
+    t.string "utm_source"
+    t.string "utm_term"
+    t.string "viewport"
+    t.index ["anonymity_key", "started_at"], name: "idx_visits_anonymity_started"
+    t.index ["started_at"], name: "index_rails_analytics_visits_on_started_at"
   end
 end
