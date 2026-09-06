@@ -3,6 +3,7 @@
 require_relative "rails_analytics/version"
 require_relative "rails_analytics/configuration"
 require_relative "rails_analytics/ip_mask"
+require_relative "rails_analytics/identity"
 require_relative "rails_analytics/engine" if defined?(Rails::Railtie)
 
 module RailsAnalytics
