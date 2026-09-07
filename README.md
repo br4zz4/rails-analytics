@@ -5,6 +5,12 @@ third-party analytics dependencies — it collects traffic **server-side**, stor
 your own database, and renders an aggregated dashboard with zero client-side JS
 dependencies.
 
+## Screenshots
+
+| Dashboard — aggregated overview | Dashboard — events & visits |
+|:---:|:---:|
+| <img src="docs/dashboard.png" width="480" alt="Rails Analytics dashboard"> | <img src="docs/dashboard-2.png" width="480" alt="Rails Analytics dashboard detail"> |
+
 ## How it works
 
 ```
