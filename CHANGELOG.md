@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3 (2026-09-07)
+
+- Docs: standardize mount_path examples on `/analytics` (README + install template)
+
 ## 1.0.2 (2026-09-07)
 
 - Fix: dashboard CSS now uses the engine route helper (`rails_analytics.dashboard_css_path`)
