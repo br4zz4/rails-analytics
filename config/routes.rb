@@ -2,7 +2,7 @@
 
 RailsAnalytics::Engine.routes.draw do
   get "tracker.js" => "analytics#tracker"
-  get "dashboard.css" => "analytics#dashboard_css"
+  get "dashboard.css" => "analytics#dashboard_css", as: "dashboard_css"
   post "collect" => "analytics#collect"
   get  "token" => "analytics#token"
   root to: "dashboards#overview"

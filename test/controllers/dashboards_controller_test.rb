@@ -35,6 +35,12 @@ class RailsAnalytics::DashboardsControllerTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "8.8.8.0"
   end
 
+  test "overview links dashboard.css via the engine route helper" do
+    get "/rails_analytics/"
+    assert_includes response.body, "/rails_analytics/dashboard.css"
+    refute_includes response.body, "request.base_url"
+  end
+
   test "events returns 200" do
     get "/rails_analytics/events"
     assert_response :success
