@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 (2026-09-07)
+
+- Add gemspec metadata URIs (homepage, source, changelog, docs, bug tracker) for the rubygems.org page
+
 ## 1.0.0 (2026-09-06)
 
 - Complete rewrite from pilot v0.1.0
