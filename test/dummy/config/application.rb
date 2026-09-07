@@ -38,5 +38,8 @@ module Dummy
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Demo app: site de campanha brasileira — dashboard em pt-BR.
+    config.i18n.default_locale = :"pt-BR"
   end
 end

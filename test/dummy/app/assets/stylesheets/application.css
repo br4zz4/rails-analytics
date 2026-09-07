@@ -1,10 +1,57 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+/* Demo landing page (campaign site) */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color: #1f2937; background: #f9fafb; }
+
+.demo { max-width: 640px; margin: 0 auto; padding-bottom: 3rem; }
+
+.demo-hero {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: #fff;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+.demo-hero h1 { margin: 0 0 0.5rem; font-size: 2.5rem; }
+.demo-num { opacity: 0.85; }
+.demo-hero p { margin: 0 0 1.5rem; opacity: 0.9; }
+
+.demo-btn {
+  display: inline-block;
+  padding: 0.6rem 1.25rem;
+  margin: 0.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.demo-btn-primary { background: #fff; color: #991b1b; }
+.demo-btn-primary:hover { background: #fef2f2; }
+.demo-btn-secondary { background: transparent; color: #fff; border-color: rgba(255,255,255,0.6); }
+.demo-btn-secondary:hover { border-color: #fff; }
+
+.demo-section { padding: 2rem; }
+.demo-section h2 { margin-top: 0; }
+.demo-social .demo-btn { background: #fff; border: 1px solid #e5e7eb; color: #1f2937; }
+.demo-social .demo-btn:hover { border-color: #991b1b; color: #991b1b; }
+
+form label { display: block; margin-bottom: 1rem; font-weight: 500; }
+form input {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+form .demo-btn { background: #dc2626; color: #fff; }
+
+.demo-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+.demo-footer a { color: #991b1b; }

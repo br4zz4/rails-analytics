@@ -219,6 +219,37 @@ end
 <%= render "metric", label: "Avg visits/day", value: number_with_precision(@stats.avg_visits_per_day, precision: 1) %>
 ```
 
+## Run the demo
+
+The bundled `test/dummy` app is a full demo: a Brazilian campaign landing page with the
+tracker wired up, plus an admin dashboard with seeded aggregate data.
+
+```bash
+# from the gem root
+cd test/dummy
+bin/rails server
+```
+
+Then open:
+
+| URL | What you'll see |
+|-----|-----------------|
+| `http://localhost:3000/` | Campaign landing page — click the donate / social buttons and scroll to fire `track()` events |
+| `http://localhost:3000/login` | Simulated admin login (session-only, no Devise needed for the demo) |
+| `http://localhost:3000/rails_analytics/` | Dashboard overview (KPIs, visit chart, top sources, top events, UTM, devices) |
+| `http://localhost:3000/rails_analytics/events` | Events aggregated by day, filterable by event name |
+| `http://localhost:3000/rails_analytics/visits` | Visits aggregated by day |
+
+The dashboard reads seed data (idempotent, re-runnable):
+
+```bash
+cd test/dummy && bin/rails db:seed
+```
+
+Real traffic from the landing page is collected through the same `POST /collect` endpoint
+the tracker uses, so interacting with the demo adds live visits/events on top of the seeds
+— watch the KPIs change as you click.
+
 ## Tests
 
 ```bash

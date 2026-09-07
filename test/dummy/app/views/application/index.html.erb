@@ -1,0 +1,90 @@
+<%# Landing page demo: site de campanha política (caso de uso).
+    O tracker rails_analytics está injetado no layout e dispara eventos via
+    window.RailsAnalytics.track(...). Este é um exemplo de uso real. %>
+<div class="demo">
+  <header class="demo-hero">
+    <h1>Fulano da Silva <span class="demo-num">45</span></h1>
+    <p>Prefeito de Cidade Nova — eleições 2026</p>
+    <a class="demo-btn demo-btn-primary" href="#" data-track="doacao-click">Quero doar</a>
+    <a class="demo-btn demo-btn-secondary" href="#" data-track="participe-click">Participe da campanha</a>
+  </header>
+
+  <section class="demo-section">
+    <h2>Siga a campanha</h2>
+    <div class="demo-social">
+      <a class="demo-btn" href="#" data-track="instagram-click">Instagram</a>
+      <a class="demo-btn" href="#" data-track="email-click">Newsletter</a>
+      <a class="demo-btn" href="https://wa.me/5511999999999" target="_blank" data-track="whatsapp-click">WhatsApp</a>
+    </div>
+  </section>
+
+  <section class="demo-section">
+    <h2>Participe</h2>
+    <form id="form-participe" data-form="participe">
+      <label>Nome
+        <input type="text" name="nome" placeholder="Seu nome">
+      </label>
+      <label>E-mail
+        <input type="email" name="email" placeholder="voce@email.com">
+      </label>
+      <button class="demo-btn demo-btn-primary" type="submit">Enviar</button>
+    </form>
+  </section>
+
+  <footer class="demo-footer">
+    <a href="/rails_analytics/">Dashboard de analytics</a>
+    <%= link_to(session[:admin] ? "Sair" : "Entrar como admin", session[:admin] ? logout_path : login_path) %>
+  </footer>
+</div>
+
+<script>
+// Demo: como usar o tracker para eventos custom.
+(function () {
+  "use strict";
+
+  // Cliques nos botões com data-track
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-track]");
+    if (!el || !window.RailsAnalytics) return;
+    var name = el.getAttribute("data-track");
+    var props = { element: el.textContent.trim() };
+    window.RailsAnalytics.track(name, props);
+  });
+
+  // Scroll depth (25/50/75/100) — observer simples de exemplo
+  var marks = [25, 50, 75, 100];
+  var sent = {};
+  function checkScroll() {
+    var doc = document.documentElement;
+    var pct = Math.round((window.scrollY + window.innerHeight) / doc.scrollHeight * 100);
+    marks.forEach(function (m) {
+      if (pct >= m && !sent[m] && window.RailsAnalytics) {
+        sent[m] = true;
+        window.RailsAnalytics.track("scroll-depth", { mark: m });
+      }
+    });
+  }
+  window.addEventListener("scroll", checkScroll);
+  checkScroll();
+
+  // Form start / drop — exemplo simples
+  var form = document.getElementById("form-participe");
+  if (form && window.RailsAnalytics) {
+    var formSlug = form.getAttribute("data-form");
+    form.addEventListener("focusin", function () {
+      window.RailsAnalytics.track("form-start:" + formSlug);
+    });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      window.RailsAnalytics.track("form-submit:" + formSlug);
+      form.reset();
+    });
+    // drop: sai do form sem submit (blur no último campo)
+    form.addEventListener("focusout", function (e) {
+      if (!form.contains(e.relatedTarget)) {
+        window.RailsAnalytics.track("form-drop:" + formSlug);
+      }
+    });
+  }
+})();
+</script>
