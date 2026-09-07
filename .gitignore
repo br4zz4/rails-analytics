@@ -11,8 +11,8 @@
 # macOS
 .DS_Store
 
-# Secrets locais (ward)
-.ward/
+# Secrets locais (ward) — só a chave fica local; os vaults .ward/*.ward se comiteam
+.ward/*.key
 
 # Builds da gem
 /*.gem

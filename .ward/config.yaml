@@ -1,0 +1,16 @@
+# ward configuration — https://github.com/br4zz4/ward/blob/main/docs/configuration.md
+
+# encryption:
+#   key_file: .ward/rails-analytics.key   # path to encryption key — add to .gitignore
+#   key_env: WARD_KEY        # or: env var holding the key (takes precedence)
+
+
+# vaults:
+#   default_dir: .ward/vaults/rails-analytics   # where 'ward new <name>' creates files
+#   sources:
+#     - name: rails-analytics                   # add more vaults here
+#       path: .ward/vaults/rails-analytics
+
+vaults:
+  - name: rails-analytics
+    path: .ward/vaults/rails-analytics
