@@ -42,8 +42,8 @@ dependencies.
 3. The engine verifies the token, **masks the IP** (before anything hits disk),
    derives a **daily anonymity key**, and stores a `Visit` row. Custom events are
    stored as `Event` rows linked to the visit.
-4. The **dashboard** in `/rails_analytics` shows aggregated metrics from pure SQL
-   queries in three views: overview, events, and visits.
+4. The **dashboard** at `/analytics` (default `mount_path`) shows aggregated metrics from
+    pure SQL queries in three views: overview, events, and visits.
 
 ## Requirements
 
@@ -236,7 +236,8 @@ cd test/dummy
 bin/rails server
 ```
 
-Then open:
+Then open (the bundled dummy mounts the engine at **`/rails_analytics`** as an example of a
+custom mount — the gem's default is `/analytics`):
 
 | URL | What you'll see |
 |-----|-----------------|

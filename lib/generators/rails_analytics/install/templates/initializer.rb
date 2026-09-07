@@ -5,7 +5,8 @@ RailsAnalytics.configure do |config|
   # Pode ser um Symbol (ex: :authenticate_admin!) ou um callable (ex: -> { current_user&.admin? }).
   config.auth_callback = :authenticate_admin!
 
-  # Caminho onde o engine será montado no routes.rb.
+  # Caminho onde o engine é montado (debe coincidir com el mount en config/routes.rb).
+  # Padrão: "/analytics". Puedes cambiarlo libremente (ex: "/admin/analytics").
   config.mount_path = "/analytics"
 
   # Período padrão para as consultas do dashboard (ex: 30.days).
