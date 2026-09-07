@@ -9,7 +9,7 @@ dependencies.
 
 ```
 ┌─────────────┐   tracker.js (injetado no layout)
-│  Navegador  │──────────────────────────────►  POST /rails_analytics/collect
+│  Navegador  │──────────────────────────────►  POST /analytics/collect
 └─────────────┘                                    │
                                                    ▼
                                         ┌──────────────────────┐
@@ -24,7 +24,7 @@ dependencies.
                                                    ▼
                                         ┌──────────────────────┐
                                         │  Dashboard em        │  overview / events /
-                                        │  /rails_analytics    │  visits
+                                        │  /analytics         │  visits
                                         └──────────────────────┘
 ```
 
@@ -68,8 +68,8 @@ The generator does three things:
 
 | Action | File | Detail |
 |--------|------|--------|
-| Copies the migration | `db/migrate/xxx_create_rails_analytics_page_views.rb` | creates the `rails_analytics_visits`, `rails_analytics_events` and `rails_analytics_daily_salts` tables |
-| Mounts the engine | `config/routes.rb` | adds `mount RailsAnalytics::Engine => "/rails_analytics"` |
+| Copies the migrations | `db/migrate/xxx_create_rails_analytics_*.rb` | creates the `rails_analytics_daily_salts`, `rails_analytics_visits` and `rails_analytics_events` tables |
+| Mounts the engine | `config/routes.rb` | adds `mount RailsAnalytics::Engine => RailsAnalytics.config.mount_path` (default `/analytics`) |
 | Injects the tracker | `app/views/layouts/*.html.erb` | adds `<%= rails_analytics_tracker_tag %>` to the `<head>` of the first layout |
 
 ### 3. Migrate the database
@@ -78,7 +78,7 @@ The generator does three things:
 bin/rails db:migrate
 ```
 
-Done — collection is automatic and the dashboard lives at **`/rails_analytics`**.
+Done — collection is automatic and the dashboard lives at **`/analytics`** (or your configured `mount_path`).
 
 ## Mounting
 
