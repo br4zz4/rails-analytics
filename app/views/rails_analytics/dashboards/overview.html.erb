@@ -1,2 +1,102 @@
-<h1>Overview</h1>
-<%= raw @chart %>
+<%# app/views/rails_analytics/dashboards/overview.html.erb %>
+<section class="ra-kpis">
+  <div class="ra-card">
+    <span class="ra-kpi-label"><%= t("rails_analytics.kpi.visits") %></span>
+    <strong class="ra-kpi-value"><%= number_with_delimiter(@stats[:total_visits]) %></strong>
+  </div>
+  <div class="ra-card">
+    <span class="ra-kpi-label"><%= t("rails_analytics.kpi.unique_visitors") %></span>
+    <strong class="ra-kpi-value"><%= number_with_delimiter(@stats[:total_unique]) %></strong>
+  </div>
+  <div class="ra-card">
+    <span class="ra-kpi-label"><%= t("rails_analytics.kpi.events") %></span>
+    <strong class="ra-kpi-value"><%= number_with_delimiter(@stats[:total_events]) %></strong>
+  </div>
+  <div class="ra-card">
+    <span class="ra-kpi-label"><%= t("rails_analytics.kpi.bounce_rate") %></span>
+    <strong class="ra-kpi-value"><%= (@stats[:bounce_rate] * 100).round(1) %>%</strong>
+  </div>
+</section>
+
+<section class="ra-card ra-chart-card">
+  <h2 class="ra-card-title"><%= t("rails_analytics.chart.visits_per_day") %></h2>
+  <div class="ra-chart">
+    <%= raw @chart %>
+  </div>
+</section>
+
+<section class="ra-grid">
+  <div class="ra-card">
+    <h2 class="ra-card-title"><%= t("rails_analytics.tables.top_sources") %></h2>
+    <% if @stats[:top_sources].any? %>
+      <table class="ra-table">
+        <thead>
+          <tr><th><%= t("rails_analytics.tables.source") %></th><th class="ra-num"><%= t("rails_analytics.tables.count") %></th></tr>
+        </thead>
+        <tbody>
+          <% @stats[:top_sources].each do |ref, count| %>
+            <tr><td class="ra-mono"><%= ref %></td><td class="ra-num"><%= number_with_delimiter(count) %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="ra-empty"><%= t("rails_analytics.empty") %></p>
+    <% end %>
+  </div>
+
+  <div class="ra-card">
+    <h2 class="ra-card-title"><%= t("rails_analytics.tables.top_events") %></h2>
+    <% if @stats[:top_events].any? %>
+      <table class="ra-table">
+        <thead>
+          <tr><th><%= t("rails_analytics.tables.event_name") %></th><th class="ra-num"><%= t("rails_analytics.tables.count") %></th></tr>
+        </thead>
+        <tbody>
+          <% @stats[:top_events].each do |name, count| %>
+            <tr><td class="ra-mono"><%= name %></td><td class="ra-num"><%= number_with_delimiter(count) %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="ra-empty"><%= t("rails_analytics.empty") %></p>
+    <% end %>
+  </div>
+</section>
+
+<% if @stats[:utm_breakdown].any? %>
+  <section class="ra-card">
+    <h2 class="ra-card-title"><%= t("rails_analytics.tables.utm") %></h2>
+    <table class="ra-table ra-utm-table">
+      <thead>
+        <tr>
+          <th><%= t("rails_analytics.tables.source") %></th>
+          <th><%= t("rails_analytics.tables.campaign") %></th>
+          <th><%= t("rails_analytics.tables.medium") %></th>
+          <th class="ra-num"><%= t("rails_analytics.tables.count") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @stats[:utm_breakdown].each do |row| %>
+          <tr>
+            <td class="ra-mono"><%= row["utm_source"] %></td>
+            <td class="ra-mono"><%= row["utm_campaign"] %></td>
+            <td class="ra-mono"><%= row["utm_medium"] %></td>
+            <td class="ra-num"><%= number_with_delimiter(row["count"]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
+
+<section class="ra-card">
+  <h2 class="ra-card-title"><%= t("rails_analytics.tables.devices") %></h2>
+  <div class="ra-devices">
+    <% @stats[:devices].each do |device, count| %>
+      <div class="ra-device">
+        <span class="ra-kpi-label"><%= device %></span>
+        <strong class="ra-kpi-value"><%= number_with_delimiter(count) %></strong>
+      </div>
+    <% end %>
+  </div>
+</section>

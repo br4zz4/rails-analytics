@@ -1,1 +1,50 @@
-<h1>Events</h1>
+<%# app/views/rails_analytics/dashboards/events.html.erb %>
+<section class="ra-card">
+  <h2 class="ra-card-title"><%= t("rails_analytics.nav.events") %></h2>
+
+  <div class="ra-filter">
+    <%= form_tag rails_analytics.events_path, method: :get do %>
+      <%= select_tag :name,
+            options_for_select(
+              [[t("rails_analytics.filter.all_events"), ""]] +
+              RailsAnalytics::Stats.event_counts_by_name.keys.map { |n| [n, n] },
+              @event_name
+            ),
+            onchange: "this.form.submit()" %>
+      <noscript><%= submit_tag t("rails_analytics.filter.filter") %></noscript>
+    <% end %>
+  </div>
+
+  <% if @events[:data].any? %>
+    <table class="ra-table">
+      <thead>
+        <tr>
+          <th><%= t("rails_analytics.tables.date") %></th>
+          <th><%= t("rails_analytics.tables.event_name") %></th>
+          <th class="ra-num"><%= t("rails_analytics.tables.count") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @events[:data].each do |row| %>
+          <tr>
+            <td class="ra-mono"><%= row[:date] %></td>
+            <td class="ra-mono"><%= row[:name] %></td>
+            <td class="ra-num"><%= number_with_delimiter(row[:count]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="ra-pagination">
+      <% if @page > 1 %>
+        <%= link_to t("rails_analytics.pagination.previous"), rails_analytics.events_path(page: @page - 1, name: @event_name) %>
+      <% end %>
+      <span class="current"><%= @page %></span>
+      <% if @events[:data].length == @events[:per_page] %>
+        <%= link_to t("rails_analytics.pagination.next"), rails_analytics.events_path(page: @page + 1, name: @event_name) %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="ra-empty"><%= t("rails_analytics.empty") %></p>
+  <% end %>
+</section>

@@ -1,1 +1,39 @@
-<h1>Visits</h1>
+<%# app/views/rails_analytics/dashboards/visits.html.erb %>
+<section class="ra-card">
+  <h2 class="ra-card-title"><%= t("rails_analytics.nav.visits") %></h2>
+
+  <% if @visits[:data].any? %>
+    <table class="ra-table">
+      <thead>
+        <tr>
+          <th><%= t("rails_analytics.tables.date") %></th>
+          <th class="ra-num"><%= t("rails_analytics.tables.visits") %></th>
+          <th class="ra-num"><%= t("rails_analytics.tables.unique_visitors") %></th>
+          <th><%= t("rails_analytics.tables.top_source") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @visits[:data].each do |row| %>
+          <tr>
+            <td class="ra-mono"><%= row[:date] %></td>
+            <td class="ra-num"><%= number_with_delimiter(row[:visits]) %></td>
+            <td class="ra-num"><%= number_with_delimiter(row[:unique_visitors]) %></td>
+            <td class="ra-mono"><%= row[:top_source] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="ra-pagination">
+      <% if @page > 1 %>
+        <%= link_to t("rails_analytics.pagination.previous"), rails_analytics.visits_path(page: @page - 1) %>
+      <% end %>
+      <span class="current"><%= @page %></span>
+      <% if @visits[:data].length == @visits[:per_page] %>
+        <%= link_to t("rails_analytics.pagination.next"), rails_analytics.visits_path(page: @page + 1) %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="ra-empty"><%= t("rails_analytics.empty") %></p>
+  <% end %>
+</section>
