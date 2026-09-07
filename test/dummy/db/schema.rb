@@ -32,24 +32,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_203200) do
     t.index ["visit_id"], name: "index_rails_analytics_events_on_visit_id"
   end
 
-  create_table "rails_analytics_page_views", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "ip_hash"
-    t.string "language"
-    t.string "path", null: false
-    t.string "referrer"
-    t.integer "screen_height"
-    t.integer "screen_width"
-    t.string "session_id"
-    t.string "title"
-    t.datetime "updated_at", null: false
-    t.string "user_agent"
-    t.datetime "viewed_at", null: false
-    t.index ["path"], name: "index_rails_analytics_page_views_on_path"
-    t.index ["session_id"], name: "index_rails_analytics_page_views_on_session_id"
-    t.index ["viewed_at"], name: "index_rails_analytics_page_views_on_viewed_at"
-  end
-
   create_table "rails_analytics_visits", force: :cascade do |t|
     t.string "anonymity_key", null: false
     t.string "country"
