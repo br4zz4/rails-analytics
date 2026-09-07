@@ -88,20 +88,25 @@ Done — collection is automatic and the dashboard lives at **`/analytics`** (or
 
 ## Mounting
 
-You can mount the engine at any path:
+The engine's mount point is **a single configuration** — the `mount` line in
+`config/routes.rb`. There is no separate `mount_path` to keep in sync: the tracker tag,
+the dashboard CSS and the collect endpoint all derive their URLs from the engine's own
+route helpers at runtime, so they follow whatever path you mount the engine at.
 
 ```ruby
 # config/routes.rb
-mount RailsAnalytics::Engine => "/analytics"
+mount RailsAnalytics::Engine => "/analytics"   # default
+# mount RailsAnalytics::Engine => "/admin/analytics"  # any custom path works
 ```
 
 ```erb
 <!-- layout -->
-<%= rails_analytics_tracker_tag endpoint: "/analytics" %>
+<%= rails_analytics_tracker_tag %>
 ```
 
-> The `endpoint:` passed to the helper must match the path the engine is mounted at.
-> You can also set a global default via `RailsAnalytics.configure { |c| c.mount_path = "/analytics" }`.
+> No need to pass an `endpoint:` to the helper — it resolves the mount automatically.
+> The only exception is serving the tracker from a CDN:
+> `<%= rails_analytics_tracker_tag endpoint: "/cdn/path" %>`.
 
 ## Authentication
 
