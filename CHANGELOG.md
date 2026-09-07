@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4 (2026-09-07)
+
+- Refactor: `mount_path` is now derived from the engine's route helpers at runtime
+  (single source of truth = the `mount` line in config/routes.rb). No separate
+  `mount_path` config to keep in sync. `config.mount_path` kept for backward compat.
+- Tracker tag now resolves `src` and `endpoint` from the engine routes automatically.
+
 ## 1.0.3 (2026-09-07)
 
 - Docs: standardize mount_path examples on `/analytics` (README + install template)
