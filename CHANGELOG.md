@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 (2026-09-07)
+
+- Fix: dashboard CSS now uses the engine route helper (`rails_analytics.dashboard_css_path`)
+  instead of a hardcoded `/rails_analytics` prefix — fixes 404 when mounted at a custom path
+
 ## 1.0.1 (2026-09-07)
 
 - Add gemspec metadata URIs (homepage, source, changelog, docs, bug tracker) for the rubygems.org page
