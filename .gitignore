@@ -7,3 +7,12 @@
 /test/dummy/tmp/
 /test/dummy/storage/
 /test/dummy/db/*.sqlite3*
+
+# macOS
+.DS_Store
+
+# Secrets locais (ward)
+.ward/
+
+# Builds da gem
+/*.gem
