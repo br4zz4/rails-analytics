@@ -19,4 +19,9 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 7.0"
 
   s.metadata["rubygems_mfa_required"] = "true"
+  s.metadata["homepage_uri"]        = s.homepage
+  s.metadata["source_code_uri"]     = "https://github.com/br4zz4/rails-analytics"
+  s.metadata["changelog_uri"]       = "https://github.com/br4zz4/rails-analytics/blob/main/CHANGELOG.md"
+  s.metadata["documentation_uri"]   = "https://github.com/br4zz4/rails-analytics#readme"
+  s.metadata["bug_tracker_uri"]     = "https://github.com/br4zz4/rails-analytics/issues"
 end
