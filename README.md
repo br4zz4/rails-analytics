@@ -5,6 +5,10 @@ third-party analytics dependencies — it collects traffic **server-side**, stor
 your own database, and renders an aggregated dashboard with zero client-side JS
 dependencies.
 
+The dashboard's chart shows CSS-only tooltips: hover (or keyboard-focus) any
+data point to see its date and visit count — labels on the x-axis mark first,
+last and month boundaries. No JavaScript anywhere.
+
 ## Screenshots
 
 | Dashboard — aggregated overview | Dashboard — events & visits |

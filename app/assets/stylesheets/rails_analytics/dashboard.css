@@ -66,6 +66,32 @@ body {
 .ra-chart rect { fill: var(--ra-accent); opacity: 0.85; }
 .ra-chart rect:hover { opacity: 1; }
 
+/* Chart nodes: CSS-only tooltip (no JS). The tooltip is an SVG group
+   revealed on :hover/:focus-within of its parent .ra-dot group. */
+.ra-chart .ra-dot { cursor: pointer; outline: none; }
+.ra-chart .ra-dot:focus-visible .ra-dot-circle,
+.ra-chart .ra-dot:focus .ra-dot-circle { stroke: var(--ra-text); stroke-width: 2; }
+
+.ra-chart .ra-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.12s ease; }
+.ra-chart .ra-dot:hover .ra-tooltip,
+.ra-chart .ra-dot:focus .ra-tooltip,
+.ra-chart .ra-dot:focus-within .ra-tooltip { opacity: 1; }
+
+.ra-chart .ra-tooltip rect { fill: var(--ra-text); opacity: 1; stroke: none; }
+.ra-chart .ra-tooltip text {
+  fill: var(--ra-card);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* X-axis date labels */
+.ra-chart .ra-axis-label {
+  fill: var(--ra-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
 .ra-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

@@ -1,7 +1,5 @@
-# Be sure to restart your server when you modify this file.
-
-# Version of your assets, change this if you want to expire all your assets.
-Rails.application.config.assets.version = "1.0"
-
-# Add additional assets to the asset load path.
-# Rails.application.config.assets.paths << Emoji.images_path
+# Be sure to restart your server when running with the asset pipeline.
+# Guard: the engine test bundle may not load sprockets-rails.
+if defined?(Sprockets::Railtie)
+  Rails.application.config.assets.version = "1.0"
+end

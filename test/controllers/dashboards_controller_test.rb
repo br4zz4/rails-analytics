@@ -25,6 +25,22 @@ class RailsAnalytics::DashboardsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "svg"
   end
 
+  test "overview chart nodes expose css-only tooltips" do
+    get "/rails_analytics/"
+    assert_response :success
+
+    assert_includes response.body, 'class="ra-dot"'
+    assert_includes response.body, "aria-label="
+    assert_includes response.body, 'class="ra-tooltip"'
+    assert_includes response.body, "03/10 — 1 visita"
+    refute_includes response.body.downcase, "<script"
+  end
+
+  test "chart tooltip labels never leak PII" do
+    get "/rails_analytics/"
+    refute_includes response.body, "8.8.8.0"
+  end
+
   test "overview HTML never contains anonymity_key" do
     get "/rails_analytics/"
     refute_includes response.body, RailsAnalytics::Visit.last.anonymity_key

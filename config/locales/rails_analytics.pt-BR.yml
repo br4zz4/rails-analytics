@@ -14,6 +14,10 @@ pt-BR:
     chart:
       visits_per_day: "Visitas por dia"
       no_data: "Sem dados"
+      date_format: "%d/%m"
+      tooltip:
+        one: "%{date} — 1 visita"
+        other: "%{date} — %{formatted_count} visitas"
     tables:
       top_sources: "Origem do tráfego"
       top_events: "Clics por botão"

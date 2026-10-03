@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0 (2026-10-03)
+
+- New: CSS-only tooltips on chart nodes — hover or keyboard-focus any point to
+  see `date — visits count` (no JavaScript, preserving the zero-JS design)
+- New: larger invisible hit area around each dot (easier to aim)
+- New: chart nodes are keyboard-focusable with accessible `aria-label`
+- New: x-axis date labels (first, last and month boundaries)
+- Test infra: fixed engine-root `rake test` (guarded sprockets initializer,
+  added rack-attack test dep)
+
 ## 1.0.4 (2026-09-07)
 
 - Refactor: `mount_path` is now derived from the engine's route helpers at runtime
