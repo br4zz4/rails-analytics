@@ -69,6 +69,7 @@ body {
 /* Chart nodes: CSS-only tooltip (no JS). The tooltip is an SVG group
    revealed on :hover/:focus-within of its parent .ra-dot group. */
 .ra-chart .ra-dot { cursor: pointer; outline: none; }
+.ra-chart .ra-dot-hit { pointer-events: all; }
 .ra-chart .ra-dot:focus-visible .ra-dot-circle,
 .ra-chart .ra-dot:focus .ra-dot-circle { stroke: var(--ra-text); stroke-width: 2; }
 

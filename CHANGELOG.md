@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 (2026-10-03)
+
+- Fix: chart tooltips now trigger on mouse hover in Safari/WebKit — hit area
+  circle got explicit `pointer-events="all"` (transparent fills are not
+  hit-tested under the default `visiblePainted` there)
+
 ## 1.1.0 (2026-10-03)
 
 - New: CSS-only tooltips on chart nodes — hover or keyboard-focus any point to

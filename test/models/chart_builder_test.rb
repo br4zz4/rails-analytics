@@ -35,9 +35,12 @@ module RailsAnalytics
       end
     end
 
-    test "hit area is larger than the visible dot" do
+    test "hit area is larger than the visible dot and captures pointer" do
+      svg = build_chart
       assert ChartBuilder::HIT_RADIUS > ChartBuilder::DOT_RADIUS
-      assert_match(/r="#{ChartBuilder::DOT_RADIUS}" class="ra-dot-circle"/, build_chart)
+      assert_match(/r="#{ChartBuilder::DOT_RADIUS}" class="ra-dot-circle"/, svg)
+      # WebKit does not hit-test transparent fills with default pointer-events
+      assert_match(/r="12" fill="transparent" pointer-events="all"/, svg)
     end
 
     test "renders x-axis labels for first and last point" do

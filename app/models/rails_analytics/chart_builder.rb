@@ -60,7 +60,7 @@ module RailsAnalytics
 
       <<~NODE.strip
         <g class="ra-dot" tabindex="0" role="img" aria-label="#{label}">
-          <circle cx="#{cx}" cy="#{cy}" r="#{HIT_RADIUS}" fill="transparent" />
+          <circle cx="#{cx}" cy="#{cy}" r="#{HIT_RADIUS}" fill="transparent" pointer-events="all" />
           <circle cx="#{cx}" cy="#{cy}" r="#{DOT_RADIUS}" class="ra-dot-circle" />
           #{tooltip(cx, cy, label)}
         </g>
