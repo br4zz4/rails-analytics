@@ -139,6 +139,21 @@ module RailsAnalytics
       Visit.since(since)
     end
 
+    # Sessions with their events, newest first. Optional filter by event name.
+    def journeys(event: nil, page: 1, per_page: 10, since: default_since)
+      scope = base_scope(since)
+      if event.present?
+        scope = scope.joins(:events).merge(Event.named(event))
+      end
+      visits = scope.order(started_at: :desc)
+                    .offset((page - 1) * per_page)
+                    .limit(per_page)
+                    .includes(:events)
+
+      { data: visits.map { |visit| Journey.new(visit) },
+        total: scope.count, page: page, per_page: per_page }
+    end
+
     def default_since
       RailsAnalytics.config.since_default.ago
     end

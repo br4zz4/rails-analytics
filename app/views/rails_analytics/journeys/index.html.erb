@@ -1,0 +1,62 @@
+<%# app/views/rails_analytics/journeys/index.html.erb %>
+<% fmt = t("rails_analytics.journeys.datetime_format") %>
+<section class="ra-card">
+  <h2 class="ra-card-title"><%= t("rails_analytics.journeys.title") %></h2>
+
+  <div class="ra-filter">
+    <%= form_tag rails_analytics.journeys_path, method: :get do %>
+      <%= select_tag :event,
+            options_for_select(
+              [[t("rails_analytics.filter.all_events"), ""]] +
+              @event_names.map { |n| [n, n] },
+              @event_name
+            ),
+            onchange: "this.form.submit()" %>
+      <noscript><%= submit_tag t("rails_analytics.filter.filter") %></noscript>
+    <% end %>
+  </div>
+
+  <% if @journeys[:data].any? %>
+    <% @journeys[:data].each do |journey| %>
+      <% j = journey.to_h %>
+      <article class="ra-journey">
+        <header class="ra-journey-head">
+          <span class="ra-journey-origin" title="<%= t("rails_analytics.journeys.origin") %>"><%= j[:origin] %></span>
+          <span class="ra-journey-meta"><%= j[:device] %></span>
+          <% if j[:utm][:source].present? %>
+            <span class="ra-journey-utm" title="<%= j[:utm].map { |k, v| "#{k}: #{v}" }.join(', ') %>"><%= j[:utm][:source] %></span>
+          <% end %>
+          <span class="ra-journey-steps">
+            <%= t("rails_analytics.journeys.step_count", count: j[:steps].size) %>
+          </span>
+          <time class="ra-journey-steps"><%= j[:started_at].strftime(fmt) %></time>
+        </header>
+
+        <div class="ra-journey-path">
+          <% j[:steps].each_with_index do |step, i| %>
+            <% if i > 0 %><span class="ra-journey-arrow" aria-hidden="true">→</span><% end %>
+            <span class="ra-journey-step ra-journey-step--<%= step[:kind] %>" tabindex="0">
+              <span class="ra-journey-step-label"><%= step[:label] %></span>
+              <span class="ra-journey-step-detail" role="tooltip">
+                <span class="ra-journey-step-time"><%= step[:time].strftime(fmt) if step[:time] %></span>
+                <% if step[:detail].present? %><span><%= step[:detail] %></span><% end %>
+              </span>
+            </span>
+          <% end %>
+        </div>
+      </article>
+    <% end %>
+
+    <div class="ra-pagination">
+      <% if @page > 1 %>
+        <%= link_to t("rails_analytics.pagination.previous"), rails_analytics.journeys_path(page: @page - 1, event: @event_name) %>
+      <% end %>
+      <span class="current"><%= @page %></span>
+      <% if @journeys[:data].length == @journeys[:per_page] %>
+        <%= link_to t("rails_analytics.pagination.next"), rails_analytics.journeys_path(page: @page + 1, event: @event_name) %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="ra-empty"><%= t("rails_analytics.empty") %></p>
+  <% end %>
+</section>

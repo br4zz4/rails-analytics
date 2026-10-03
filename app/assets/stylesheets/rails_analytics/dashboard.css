@@ -139,6 +139,107 @@ body {
   }
 }
 
+/* Journey cards */
+.ra-journey {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.ra-journey-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--ra-accent-soft);
+  border-bottom: 1px solid var(--ra-border);
+  font-size: 12px;
+}
+
+.ra-journey-origin {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 700;
+}
+.ra-journey-origin:empty::before { content: "direct"; }
+
+.ra-journey-meta { color: var(--ra-muted); }
+.ra-journey-utm {
+  background: var(--ra-accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+}
+.ra-journey-steps { margin-left: auto; color: var(--ra-muted); font-variant-numeric: tabular-nums; }
+
+.ra-journey-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 14px;
+}
+
+.ra-journey-arrow {
+  color: var(--ra-muted);
+  font-size: 12px;
+  flex: none;
+}
+
+/* Step chip. Tooltip is CSS-only: shown on :hover and :focus. */
+.ra-journey-step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--ra-border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: var(--ra-card);
+  cursor: default;
+  outline: none;
+}
+.ra-journey-step:focus-visible { border-color: var(--ra-accent); }
+
+.ra-journey-step:focus-visible,
+.ra-journey-step:focus:not(:focus-visible) {
+  border-color: var(--ra-accent);
+}
+
+.ra-journey-step--click { border-color: var(--ra-accent); color: var(--ra-accent); font-weight: 600; }
+.ra-journey-step--outbound { border-style: dashed; color: var(--ra-muted); }
+.ra-journey-step--form { border-color: #059669; color: #059669; }
+.ra-journey-step--scroll { color: var(--ra-muted); }
+.ra-journey-step--email { border-color: #d97706; color: #d97706; }
+.ra-journey-step--pageview { background: var(--ra-bg); font-weight: 600; }
+
+.ra-journey-step-detail {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 140px;
+  max-width: 260px;
+  background: var(--ra-text);
+  color: var(--ra-card);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 10;
+}
+
+.ra-journey-step:hover .ra-journey-step-detail,
+.ra-journey-step:focus .ra-journey-step-detail { opacity: 1; }
+
+.ra-journey-step-time { font-weight: 700; opacity: 0.75; }
+
 /* Pagination */
 .ra-pagination {
   display: flex;

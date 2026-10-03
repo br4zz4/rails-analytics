@@ -9,6 +9,12 @@ The dashboard's chart shows CSS-only tooltips: hover (or keyboard-focus) any
 data point to see its date and visit count — labels on the x-axis mark first,
 last and month boundaries. No JavaScript anywhere.
 
+The **Journeys** view lists recent sessions as cards: each card shows the
+user's ordered trajectory (landing page → clicks → scroll depth → forms) with
+arrows between steps, hover/focus details on every step, and origin, device
+and UTM in the card header. Filter by event name to see the journeys that
+contain a specific click/topic.
+
 ## Screenshots
 
 | Dashboard — aggregated overview | Dashboard — events & visits |

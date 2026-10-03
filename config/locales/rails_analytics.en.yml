@@ -5,6 +5,7 @@ en:
       overview: "Overview"
       events: "Events"
       visits: "Visits"
+      journeys: "Journeys"
     footer: "Aggregated and anonymous data — 6 month retention"
     kpi:
       visits: "Visits"
@@ -39,3 +40,24 @@ en:
     pagination:
       previous: "Previous"
       next: "Next"
+    journeys:
+      view: "journeys"
+      title: "Journeys by session"
+      datetime_format: "%m/%d %H:%M"
+      origin: "Origin"
+      step_count:
+        one: "1 step"
+        other: "%{count} steps"
+      steps:
+        scroll: "Scroll %{mark}%"
+        form: "Form %{form}"
+        email: "Email"
+        time_on_page: "%{seconds}s on page"
+      devices:
+        desktop: "Desktop"
+        mobile: "Mobile"
+        tablet: "Tablet"
+        unknown: "Unknown"
+      details:
+        viewport: "Screen %{value}"
+        language: "Language %{value}"

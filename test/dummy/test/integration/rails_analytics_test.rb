@@ -133,6 +133,12 @@ class RailsAnalytics::DashboardTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "journeys page is accessible" do
+    get "/rails_analytics/journeys"
+    assert_response :success
+    assert_includes response.body, "ra-journey"
+  end
+
   test "footer shows LGPD compliance" do
     get "/rails_analytics/"
     assert_includes response.body, "retenção"

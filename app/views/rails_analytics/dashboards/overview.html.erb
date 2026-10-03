@@ -53,7 +53,13 @@
         </thead>
         <tbody>
           <% @stats[:top_events].each do |name, count| %>
-            <tr><td class="ra-mono"><%= name %></td><td class="ra-num"><%= number_with_delimiter(count) %></td></tr>
+            <tr>
+              <td class="ra-mono">
+                <%= name %>
+                <%= link_to t("rails_analytics.journeys.view"), rails_analytics.journeys_path(event: name) %>
+              </td>
+              <td class="ra-num"><%= number_with_delimiter(count) %></td>
+            </tr>
           <% end %>
         </tbody>
       </table>

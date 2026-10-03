@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 (2026-10-03)
+
+- New: Journeys dashboard view — session cards showing the user's ordered
+  trajectory (pageview → clicks → scroll → forms) with arrows between steps,
+  CSS-only hover/focus details per step, and origin/device/UTM in the header
+- New: filter journeys by event name; "journeys" links on the events and
+  overview tables jump straight to filtered sessions
+
 ## 1.1.1 (2026-10-03)
 
 - Fix: chart tooltips now trigger on mouse hover in Safari/WebKit — hit area

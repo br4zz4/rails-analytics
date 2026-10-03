@@ -5,6 +5,7 @@ pt-BR:
       overview: "Visão geral"
       events: "Eventos"
       visits: "Visitas"
+      journeys: "Trajetórias"
     footer: "Dados agregados e anônimos — retenção 6 meses"
     kpi:
       visits: "Visitas"
@@ -39,3 +40,24 @@ pt-BR:
     pagination:
       previous: "Anterior"
       next: "Próximo"
+    journeys:
+      view: "trajetórias"
+      title: "Trajetórias por sessão"
+      datetime_format: "%d/%m %H:%M"
+      origin: "Origem"
+      step_count:
+        one: "1 passo"
+        other: "%{count} passos"
+      steps:
+        scroll: "Scroll %{mark}%"
+        form: "Form %{form}"
+        email: "E-mail"
+        time_on_page: "%{seconds}s na página"
+      devices:
+        desktop: "Desktop"
+        mobile: "Mobile"
+        tablet: "Tablet"
+        unknown: "Desconhecido"
+      details:
+        viewport: "Tela %{value}"
+        language: "Idioma %{value}"

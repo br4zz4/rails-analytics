@@ -8,4 +8,5 @@ RailsAnalytics::Engine.routes.draw do
   root to: "dashboards#overview"
   get "events" => "dashboards#events"
   get "visits" => "dashboards#visits"
+  get "journeys" => "journeys#index"
 end

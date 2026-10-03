@@ -28,9 +28,11 @@
         <% @events[:data].each do |row| %>
           <tr>
             <td class="ra-mono"><%= row[:date] %></td>
-            <td class="ra-mono"><%= row[:name] %></td>
-            <td class="ra-num"><%= number_with_delimiter(row[:count]) %></td>
-          </tr>
+            <td class="ra-mono">
+              <%= row[:name] %>
+              <%= link_to t("rails_analytics.journeys.view"), rails_analytics.journeys_path(event: row[:name]) %>
+            </td>
+            <td class="ra-num"><%= number_with_delimiter(row[:count]) %></td>          </tr>
         <% end %>
       </tbody>
     </table>
